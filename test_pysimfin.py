@@ -1,6 +1,6 @@
 from pysimfin import PySimFin, SimFinError
 
-API_KEY = "PUT_YOUR_KEY_HERE"
+API_KEY = "97d9a61d-5dd4-4023-a8a7-5bfd9dbcd50b"
 
 sf = PySimFin(api_key=API_KEY)
 
