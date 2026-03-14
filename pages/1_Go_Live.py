@@ -1,50 +1,76 @@
+from pysimfin import PySimFin
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from datetime import date
 
-# ------------------------------
-# Fake stand-in dataset
-# ------------------------------
+st.title("📊 Go Live")
+
+api_key = "YOUR_API_KEY"  # placeholder for now
+simfin = PySimFin(api_key)
+
 @st.cache_data
 def load_fake_data():
     return pd.DataFrame({
-        "ticker": ["AAPL", "AAPL", "AAPL", "MSFT", "MSFT", "MSFT"],
-        "year":   [2021, 2022, 2023, 2021, 2022, 2023],
-        "revenue":    [365_817, 394_328, 383_285, 168_088, 198_270, 211_915],
-        "net_income": [94_680,  99_803,  97_000,  61_271,  72_738,  75_000],
+        "date": pd.date_range("2023-01-01", periods=10, freq="D"),
+        "close": [100, 102, 101, 104, 106, 105, 107, 110, 108, 111],
+        "ticker": ["AAPL"] * 10
     })
 
-df = load_fake_data()
-
-# ------------------------------
-# Sidebar controls
-# ------------------------------
+# --------------------------
+# Sidebar controls first
+# --------------------------
 st.sidebar.header("Filters")
 
-ticker = st.sidebar.selectbox("Ticker", sorted(df["ticker"].unique()))
+ticker = st.sidebar.selectbox("Ticker", ["AAPL", "MSFT", "TSLA", "AMZN"])
 
-year_min, year_max = st.sidebar.slider(
-    "Year range",
-    int(df["year"].min()),
-    int(df["year"].max()),
-    (int(df["year"].min()), int(df["year"].max()))
-)
+start_date = st.sidebar.date_input("Start Date", date(2023, 1, 1))
+end_date = st.sidebar.date_input("End Date", date(2023, 1, 10))
 
-filtered = df[(df["ticker"] == ticker) & (df["year"].between(year_min, year_max))].copy()
+# --------------------------
+# Load data after inputs exist
+# --------------------------
+try:
+    df = simfin.get_share_prices(ticker, str(start_date), str(end_date))
 
-# ------------------------------
-# Main layout
-# ------------------------------
-st.title("📊 Financial Dashboard (Stand-in Data)")
+    if df.empty:
+        st.warning("No API data returned. Using fallback sample data.")
+        df = load_fake_data()
 
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Revenue", f"{filtered['revenue'].sum():,}")
-col2.metric("Total Net Income", f"{filtered['net_income'].sum():,}")
-col3.metric("Rows", f"{len(filtered)}")
+except Exception as e:
+    st.warning(f"Using fallback sample data. Reason: {e}")
+    df = load_fake_data()
 
-st.subheader("Trend")
-fig = px.line(filtered, x="year", y=["revenue", "net_income"], markers=True)
-st.plotly_chart(fig, use_container_width=True)
+# --------------------------
+# If API data doesn't have date as a normal column,
+# reset index so Plotly can use it
+# --------------------------
+if "date" not in df.columns:
+    df = df.reset_index()
+
+# try to rename likely date column if needed
+if "Date" in df.columns and "date" not in df.columns:
+    df = df.rename(columns={"Date": "date"})
+
+if "Close" in df.columns and "close" not in df.columns:
+    df = df.rename(columns={"Close": "close"})
+
+# --------------------------
+# Display
+# --------------------------
+st.subheader(f"{ticker} Price Chart")
+
+if "date" in df.columns and "close" in df.columns:
+    fig = px.line(
+        df,
+        x="date",
+        y="close",
+        title=f"{ticker} Price"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.error("Data does not contain the expected 'date' and 'close' columns.")
+    st.dataframe(df, use_container_width=True)
 
 st.subheader("Raw Data")
-st.dataframe(filtered, use_container_width=True)
+st.dataframe(df, use_container_width=True)
