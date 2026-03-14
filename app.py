@@ -1,51 +1,20 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
 
 st.set_page_config(page_title="SimFin Dashboard", layout="wide")
 
-# -------------------------
-# 1) Fake stand-in dataset
-# -------------------------
-@st.cache_data
-def load_fake_data():
-    return pd.DataFrame({
-        "ticker": ["AAPL", "AAPL", "AAPL", "MSFT", "MSFT", "MSFT"],
-        "year":   [2021, 2022, 2023, 2021, 2022, 2023],
-        "revenue": [365_817, 394_328, 383_285, 168_088, 198_270, 211_915],
-        "net_income": [94_680, 99_803, 97_000, 61_271, 72_738, 75_000],
-    })
+st.title("📈 Web-Based Trading System (SimFin + ML)")
+st.write("""
+This app provides an interactive trading dashboard.
 
-df = load_fake_data()
+Use the sidebar to navigate:
+- **Go Live**: explore company fundamentals and trends (stand-in data for now)
+- Later: **Model Signals / Backtesting** (once the ML model is integrated)
+""")
 
-# -------------------------
-# 2) Sidebar controls
-# -------------------------
-st.sidebar.header("Filters")
+st.subheader("Development Team")
+st.write("""
+- **You**: Part 2 (SimFin wrapper + Streamlit app)
+- **Partner**: ML model + signals
+""")
 
-ticker = st.sidebar.selectbox("Ticker", sorted(df["ticker"].unique()))
-year_min, year_max = st.sidebar.slider(
-    "Year range",
-    int(df["year"].min()),
-    int(df["year"].max()),
-    (int(df["year"].min()), int(df["year"].max()))
-)
-
-filtered = df[(df["ticker"] == ticker) & (df["year"].between(year_min, year_max))].copy()
-
-# -------------------------
-# 3) Main layout
-# -------------------------
-st.title("📊 Financial Dashboard (Stand-in Data)")
-
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Revenue", f"{filtered['revenue'].sum():,}")
-col2.metric("Total Net Income", f"{filtered['net_income'].sum():,}")
-col3.metric("Rows", f"{len(filtered)}")
-
-st.subheader("Trend")
-fig = px.line(filtered, x="year", y=["revenue", "net_income"], markers=True)
-st.plotly_chart(fig, use_container_width=True)
-
-st.subheader("Raw Data")
-st.dataframe(filtered, use_container_width=True)
+st.info("Go Live currently uses hard-coded sample data until the SimFin API key + model are ready.")
