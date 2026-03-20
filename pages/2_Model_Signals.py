@@ -12,7 +12,7 @@ load_dotenv()
 st.title("📈 Model Signals")
 st.caption("Generate a model-based trading recommendation using recent market data.")
 
-api_key = os.getenv("SIMFIN_API_KEY")
+api_key = os.getenv("SIMFIN_API_KEY") or st.secrets["SIMFIN_API_KEY"]
 
 if not api_key:
     st.error("API key not found. Check your .env file.")
