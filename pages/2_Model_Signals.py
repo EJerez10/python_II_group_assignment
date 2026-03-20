@@ -23,15 +23,10 @@ loaded_model = joblib.load("gradient_boosting_model.joblib")
 
 st.sidebar.header("Signal Inputs")
 
-popular_ticker = st.sidebar.selectbox(
+ticker = st.sidebar.selectbox(
     "Popular Tickers",
     ["AAPL", "MSFT", "TSLA", "AMZN", "GOOGL", "NVDA"]
 )
-
-ticker = st.sidebar.text_input(
-    "Or type any ticker",
-    value=popular_ticker
-).upper().strip()
 
 start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2023-01-01"))
 end_date = st.sidebar.date_input("End Date", pd.to_datetime("2024-12-31"))
