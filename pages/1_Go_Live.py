@@ -35,6 +35,10 @@ ticker = st.sidebar.selectbox(
 # ---------------------------
 today = date.today()
 
+if timeframe == "YTD":
+    start_date = date(today.year, 1, 1)
+    end_date = today
+
 st.subheader(ticker)
 st.caption("Live market view with customizable chart controls.")
 
