@@ -35,9 +35,14 @@ ticker = st.sidebar.selectbox(
 # ---------------------------
 today = date.today()
 
-if timeframe == "YTD":
-    start_date = date(today.year, 1, 1)
-    end_date = today
+df_all = simfin.get_share_prices(ticker, "2023-01-01", str(today))
+
+if df_all.empty:
+    st.warning("No data returned for this ticker.")
+    st.stop()
+
+df_all["Date"] = pd.to_datetime(df_all["Date"])
+latest_available = df_all["Date"].max().date()
 
 st.subheader(ticker)
 st.caption("Live market view with customizable chart controls.")
@@ -77,19 +82,20 @@ if manual_dates:
         end_date = st.date_input("End Date", today)
 else:
     if timeframe == "5D":
-        start_date = today - timedelta(days=7)
+        start_date = latest_available - timedelta(days=7)
     elif timeframe == "1M":
-        start_date = today - timedelta(days=30)
+        start_date = latest_available - timedelta(days=30)
     elif timeframe == "3M":
-        start_date = today - timedelta(days=90)
+        start_date = latest_available - timedelta(days=90)
     elif timeframe == "6M":
-        start_date = today - timedelta(days=180)
+        start_date = latest_available - timedelta(days=180)
     elif timeframe == "YTD":
-        start_date = date(today.year, 1, 1)
+        start_date = date(latest_available.year, 1, 1)
     else:  # 1Y
-        start_date = today - timedelta(days=365)
+        start_date = latest_available - timedelta(days=365)
 
-    end_date = today
+    end_date = latest_available
+
 
 if start_date > end_date:
     st.error("Start date must be before end date.")
