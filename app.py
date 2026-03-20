@@ -2,19 +2,26 @@ import streamlit as st
 
 st.set_page_config(page_title="SimFin Dashboard", layout="wide")
 
-st.title("📈 Web-Based Trading System (SimFin + ML)")
-st.write("""
-This app provides an interactive trading dashboard.
+st.title("📈 AI Trading Dashboard")
 
-Use the sidebar to navigate:
-- **Go Live**: explore company fundamentals and trends (stand-in data for now)
-- Later: **Model Signals / Backtesting** (once the ML model is integrated)
+st.markdown("""
+Welcome to our web-based trading system built with **SimFin**, **Streamlit**, and a **machine learning model**.
+
+This platform allows users to:
+- explore historical stock market data
+- review company financial information
+- generate model-based trading signals
 """)
 
-st.subheader("Development Team")
-st.write("""
-- **You**: Part 2 (SimFin wrapper + Streamlit app)
-- **Partner**: ML model + signals
+st.subheader("Pages")
+st.markdown("""
+- **Go Live** → explore historical market data and company performance  
+- **Model Signals** → generate machine learning trading recommendations  
 """)
 
-st.info("Go Live currently uses hard-coded sample data until the SimFin API key + model are ready.")
+st.subheader("Team")
+st.write("Enzo Jerez")
+st.write("Roberto Cummings")
+st.write("Jia Yi Rachel Lee")
+st.write("Thomas Christan Matenco")
+st.write("Maria-Irina Popa")
