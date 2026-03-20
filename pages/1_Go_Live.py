@@ -25,15 +25,10 @@ simfin = PySimFin(api_key)
 # ---------------------------
 st.sidebar.header("Market Inputs")
 
-popular_ticker = st.sidebar.selectbox(
+ticker = st.sidebar.selectbox(
     "Popular Tickers",
     ["AAPL", "MSFT", "TSLA", "AMZN", "GOOGL", "NVDA", "META", "SPOT"]
 )
-
-ticker = st.sidebar.text_input(
-    "Or type any ticker",
-    value=popular_ticker
-).upper().strip()
 
 # ---------------------------
 # Main-page chart controls
