@@ -18,13 +18,14 @@ st.markdown("""
 }
 
 .team-img {
-    width: 100%;
-    height: 260px;
+    width: 200px;
+    height: 200px;
     object-fit: cover;
     object-position: center top;
-    border-radius: 12px;
+    border-radius: 50%;
     display: block;
-    margin-bottom: 0.5rem;
+    margin: 0 auto 0.6rem auto;
+    border: 3px solid rgba(255,255,255,0.15);
 }
 
 .team-name {
