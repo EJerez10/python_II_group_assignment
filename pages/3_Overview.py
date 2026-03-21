@@ -3,6 +3,7 @@ from datetime import date, timedelta
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 from dotenv import load_dotenv
 
@@ -20,18 +21,12 @@ if not api_key:
 simfin = PySimFin(api_key)
 
 # ---------------------------
-# Ticker selector near title
+# Select stock
 # ---------------------------
-ticker_col1, ticker_col2 = st.columns([2, 3])
-
-with ticker_col1:
-    ticker = st.selectbox(
-        "Select Stock",
-        ["AAPL", "MSFT", "TSLA", "AMZN", "GOOG", "NVDA", "META", "SPOT"]
-    )
-
-with ticker_col2:
-    st.caption("Explore historical price action, moving averages, and recent trading patterns.")
+ticker = st.selectbox(
+    "Select Stock",
+    ["AAPL", "MSFT", "TSLA", "AMZN", "GOOG", "NVDA", "META", "SPOT"]
+)
 
 # ---------------------------
 # Fetch broad range first
@@ -47,8 +42,10 @@ df_all["Date"] = pd.to_datetime(df_all["Date"])
 latest_available = df_all["Date"].max().date()
 
 # ---------------------------
-# Main-page controls
+# Chart controls
 # ---------------------------
+st.subheader(f"{ticker} Price Chart")
+
 control_col1, control_col2 = st.columns([2, 2])
 
 with control_col1:
@@ -60,20 +57,20 @@ with control_col1:
 
 with control_col2:
     chart_type = st.radio(
-        "Chart Type",
+        "Chart View",
         ["Line", "Candlestick"],
         horizontal=True
     )
 
-ma_col1, ma_col2, ma_col3 = st.columns([1, 1, 3])
+control_col3, control_col4, control_col5 = st.columns([1, 1, 2])
 
-with ma_col1:
+with control_col3:
     show_ma10 = st.checkbox("10-day MA", value=False)
 
-with ma_col2:
+with control_col4:
     show_ma20 = st.checkbox("20-day MA", value=False)
 
-with ma_col3:
+with control_col5:
     manual_dates = st.toggle("Use custom dates", value=False)
 
 if manual_dates:
@@ -103,7 +100,7 @@ if start_date > end_date:
     st.stop()
 
 # ---------------------------
-# Filter from broad data
+# Filter data from broad fetch
 # ---------------------------
 df = df_all[
     (df_all["Date"].dt.date >= start_date) &
@@ -133,20 +130,22 @@ period_low = df["Low"].min()
 latest_volume = df["Volume"].iloc[-1]
 avg_volume = df["Volume"].mean()
 
-top_col1, top_col2, top_col3, top_col4 = st.columns(4)
-top_col1.metric("Current Price", f"${latest_close:,.2f}", f"{price_delta:+.2f} ({price_delta_pct:+.2f}%)")
-top_col2.metric("Period High", f"${period_high:,.2f}")
-top_col3.metric("Period Low", f"${period_low:,.2f}")
-top_col4.metric("Latest Volume", f"{latest_volume:,.0f}")
+metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
+metric_col1.metric("Current Price", f"${latest_close:,.2f}", f"{price_delta:+.2f} ({price_delta_pct:+.2f}%)")
+metric_col2.metric("Period High", f"${period_high:,.2f}")
+metric_col3.metric("Period Low", f"${period_low:,.2f}")
+metric_col4.metric("Average Volume", f"{avg_volume:,.0f}")
+metric_col5.metric("Latest Volume", f"{latest_volume:,.0f}")
 
-metric_col1, metric_col2, metric_col3 = st.columns(3)
-metric_col1.metric("Average Volume", f"{avg_volume:,.0f}")
-metric_col2.metric("Trading Days", len(df))
-metric_col3.metric("Data Current As Of", str(latest_available))
+info_col1, info_col2 = st.columns(2)
+with info_col1:
+    st.caption(f"Data current as of: {latest_available}")
+with info_col2:
+    st.caption(f"Trading days in selected range: {len(df)}")
 
 st.caption(f"Showing {ticker} data from {start_date} to {end_date}")
 
-# Moving average warnings
+# MA notes
 ma_notes = []
 if show_ma10 and len(df) < 10:
     ma_notes.append("Not enough history in the selected window to fully display the 10-day moving average.")
@@ -159,10 +158,8 @@ for note in ma_notes:
 st.markdown("---")
 
 # ---------------------------
-# Main price chart
+# Main chart
 # ---------------------------
-st.subheader(f"{ticker} Price Chart")
-
 if chart_type == "Line":
     fig_price = px.line(
         df,
@@ -171,7 +168,6 @@ if chart_type == "Line":
         title=f"{ticker} Stock Price"
     )
 
-    # Price line (neutral)
     fig_price.update_traces(
         line=dict(color="black", width=2),
         name="Price"
@@ -203,9 +199,7 @@ if chart_type == "Line":
 
     st.plotly_chart(fig_price, use_container_width=True)
 
-else:  # Candlestick
-    import plotly.graph_objects as go
-
+else:
     fig_candle = go.Figure(data=[go.Candlestick(
         x=df["Date"],
         open=df["Open"],
@@ -241,45 +235,6 @@ else:  # Candlestick
     )
 
     st.plotly_chart(fig_candle, use_container_width=True)
-
-# Optional candlestick alternative
-if chart_type == "Candlestick":
-    with st.expander("View Candlestick Chart"):
-        import plotly.graph_objects as go
-
-        fig_candle = go.Figure(data=[go.Candlestick(
-            x=df["Date"],
-            open=df["Open"],
-            high=df["High"],
-            low=df["Low"],
-            close=df["Close"],
-            name="Price"
-        )])
-
-        if show_ma10:
-            fig_candle.add_scatter(
-                x=df["Date"],
-                y=df["MA_10"],
-                mode="lines",
-                name="10-day MA"
-            )
-
-        if show_ma20:
-            fig_candle.add_scatter(
-                x=df["Date"],
-                y=df["MA_20"],
-                mode="lines",
-                name="20-day MA"
-            )
-
-        fig_candle.update_layout(
-            title=f"{ticker} Candlestick Chart",
-            xaxis_title="Date",
-            yaxis_title="Price",
-            height=500
-        )
-
-        st.plotly_chart(fig_candle, use_container_width=True)
 
 # ---------------------------
 # Volume chart
@@ -369,8 +324,6 @@ with pattern_col1:
 
 with pattern_col2:
     st.metric("5-Day Change", f"{recent_5d_change:+.2f}%")
-    st.metric("Average Volume", f"{avg_volume:,.0f}")
-    st.metric("Timeframe", timeframe if not manual_dates else "Custom")
 
 # ---------------------------
 # Raw data
