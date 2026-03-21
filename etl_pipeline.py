@@ -12,6 +12,9 @@ def build_etl_dataset(company_df, live_inference=False):
     # Keep only needed raw columns
     df = df[['Open', 'Close', 'Volume']].copy()
 
+    # Count rows before cleaning
+    rows_before = len(df)
+
     # Daily price change during the same day
     df['Daily_Change_Pct'] = (df['Close'] - df['Open']) / df['Open']
 
@@ -19,19 +22,23 @@ def build_etl_dataset(company_df, live_inference=False):
     df['MA_5'] = df['Close'].rolling(window=5).mean()
     df['MA_10'] = df['Close'].rolling(window=10).mean()
 
-    # Tomorrow's close
-    df['Close_tomorrow'] = df['Close'].shift(-1)
-
-    # Target: 1 if tomorrow closes higher than today, else 0
-    df['Target'] = (df['Close_tomorrow'] > df['Close']).astype(int)
-
-    # Remove helper column
-    df = df.drop(columns=['Close_tomorrow'])
+    # Only create target for training, not for live inference
+    if not live_inference:
+        df['Close_tomorrow'] = df['Close'].shift(-1)
+        df['Target'] = (df['Close_tomorrow'] > df['Close']).astype(int)
+        df = df.drop(columns=['Close_tomorrow'])
 
     # Remove invalid rows
     df = df.dropna()
 
+    # Count rows after cleaning
+    rows_after = len(df)
+    rows_dropped = rows_before - rows_after
+
     print(f"ETL complete: {rows_before} rows -> {rows_after} rows ({rows_dropped} dropped)")
-    
-    # Return consistent column order
-    return df[['Open', 'Close', 'Daily_Change_Pct', 'MA_5', 'MA_10', 'Volume', 'Target']]
+
+    # Return columns depending on mode
+    if live_inference:
+        return df[['Open', 'Close', 'Daily_Change_Pct', 'MA_5', 'MA_10', 'Volume']]
+    else:
+        return df[['Open', 'Close', 'Daily_Change_Pct', 'MA_5', 'MA_10', 'Volume', 'Target']]
