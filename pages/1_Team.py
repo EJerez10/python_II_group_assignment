@@ -1,49 +1,70 @@
 import streamlit as st
 
 st.title("👥 Meet the Team")
+st.caption("The people behind Raviolution.")
 
 st.markdown("""
-This project was developed as part of our Python II group assignment.
-
-Our goal was to build a complete web-based trading system that combines:
-- financial market data from SimFin
-- interactive dashboards in Streamlit
-- a machine learning model for stock recommendations
+Raviolution was built through collaboration across data, machine learning,
+and application development.
 """)
 
 st.markdown("---")
 
+# ---- TEAM DATA ----
+team_members = [
+    {
+        "name": "Enzo Jerez",
+        "role": "Web App Development",
+        "image": "assets/enzo.jpg"
+    },
+    {
+        "name": "Roberto Cummings",
+        "role": "Machine Learning",
+        "image": "assets/roberto_cummings.jpeg"
+    },
+    {
+        "name": "Jia Yi Rachel Lee",
+        "role": "ETL / Data",
+        "image": "assets/jiayirachel_lee.jpeg"
+    },
+    {
+        "name": "Thomas-Christian Manteco",
+        "role": "Research / UX",
+        "image": "assets/thomaschristian_manteco.jpeg"
+    },
+    {
+        "name": "Maria-Irina Popa",
+        "role": "Support / Analysis",
+        "image": "assets/maria-irina_popa.jpeg"
+    },
+]
+
+# ---- HELPER FUNCTION ----
+def render_member(member):
+    st.image(member["image"], use_container_width=True)
+    st.markdown(f"**{member['name']}**")
+    st.caption(member["role"])
+
+# ---- ROW 1 ----
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("Enzo Jerez")
-    st.write("""
-**Role:** Web App Development, SimFin API Integration, UI/UX Design
-
-Contributions:
-- built the Streamlit multi-page app
-- integrated the SimFin API wrapper
-- developed the stock overview and watchlist pages
-- connected the app to deployed secrets for production
-""")
+    render_member(team_members[0])
 
 with col2:
-    st.subheader("Roberto Cummings")
-    st.write("""
-**Role:** Machine Learning Model Development
+    render_member(team_members[1])
 
-Contributions:
-- trained the Gradient Boosting model
-- prepared the ETL pipeline
-- handed off model artifacts and feature engineering logic
-- supported recommendation system integration
-""")
+# ---- ROW 2 ----
+col3, col4 = st.columns(2)
 
-st.markdown("---")
+with col3:
+    render_member(team_members[2])
 
-st.subheader("Why We Built Raviolution")
-st.write("""
-We wanted to create a platform that makes stock monitoring and recommendation generation more interactive,
-more visual, and more accessible. By combining market data and machine learning in one application,
-we aimed to simulate a simplified intelligent trading dashboard.
-""")
+with col4:
+    render_member(team_members[3])
+
+# ---- CENTERED MEMBER ----
+left_spacer, center_col, right_spacer = st.columns([1, 2, 1])
+
+with center_col:
+    render_member(team_members[4])
