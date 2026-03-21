@@ -15,7 +15,7 @@ st.caption("Generate a model-based trading recommendation using recent market da
 api_key = os.getenv("SIMFIN_API_KEY") or st.secrets["SIMFIN_API_KEY"]
 
 if not api_key:
-    st.error("API key not found. Check your .env file.")
+    st.error("API key not found. Check your .env file or Streamlit secrets.")
     st.stop()
 
 simfin = PySimFin(api_key)
@@ -31,19 +31,11 @@ MODEL_PATHS = {
     "SPOT": "gradient_boosting_SPOT.joblib",
 }
 
-model_path = MODEL_PATHS.get(ticker)
-
-if not model_path:
-    st.error(f"No model found for ticker {ticker}.")
-    st.stop()
-
-loaded_model = joblib.load(model_path)
-
 st.sidebar.header("Signal Inputs")
 
 ticker = st.sidebar.selectbox(
     "Popular Tickers",
-    ["AAPL", "MSFT", "TSLA", "AMZN", "GOOG", "NVDA"]
+    ["AAPL", "MSFT", "TSLA", "AMZN", "GOOG", "NVDA", "META", "SPOT"]
 )
 
 start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2023-01-01"))
@@ -51,6 +43,14 @@ end_date = st.sidebar.date_input("End Date", pd.to_datetime("2024-12-31"))
 
 if st.button("Generate Signal"):
     try:
+        model_path = MODEL_PATHS.get(ticker)
+
+        if not model_path:
+            st.error(f"No model found for ticker {ticker}.")
+            st.stop()
+
+        loaded_model = joblib.load(model_path)
+
         raw_df = simfin.get_share_prices(ticker, str(start_date), str(end_date))
 
         if raw_df.empty:
@@ -73,7 +73,9 @@ if st.button("Generate Signal"):
         latest_close = latest_row["Close"].iloc[0]
 
         recent_close = raw_df["Close"].tail(5)
-        recent_change_pct = ((recent_close.iloc[-1] - recent_close.iloc[0]) / recent_close.iloc[0]) * 100
+        recent_change_pct = (
+            (recent_close.iloc[-1] - recent_close.iloc[0]) / recent_close.iloc[0]
+        ) * 100
 
         if prediction == 1:
             if recent_change_pct > 2:
