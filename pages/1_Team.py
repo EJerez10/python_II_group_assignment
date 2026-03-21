@@ -18,8 +18,8 @@ st.markdown("""
 }
 
 .team-img {
-    width: 200px;
-    height: 200px;
+    width: 180px;
+    height: 180px;
     object-fit: cover;
     object-position: center top;
     border-radius: 50%;
@@ -37,6 +37,12 @@ st.markdown("""
     color: #6b7280;
     font-size: 0.9rem;
 }
+
+.team-bio {
+    font-size: 0.9rem;
+    color: #d1d5db;
+    margin-top: 0.35rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -46,27 +52,32 @@ team_members = [
     {
         "name": "Enzo Jerez",
         "role": "Web App Development",
-        "image": "assets/enzo.png"
+        "image": "assets/enzo.png",
+        "bio": "Built the Streamlit application, integrated SimFin, and shaped the overall dashboard experience."
     },
     {
         "name": "Roberto Cummings",
         "role": "Machine Learning",
-        "image": "assets/roberto.png"
+        "image": "assets/roberto.png",
+        "bio": "Developed and trained the predictive models used in the recommendation engine."
     },
     {
         "name": "Jia Yi Rachel Lee",
         "role": "ETL / Data",
-        "image": "assets/rachel.png"
+        "image": "assets/rachel.png",
+        "bio": "Worked on the ETL pipeline and feature engineering needed for model inference."
     },
     {
         "name": "Thomas-Christian Manteco",
         "role": "Research / UX",
-        "image": "assets/thomas.png"
+        "image": "assets/thomas.png",
+        "bio": "Contributed product ideas, interface suggestions, and user experience improvements."
     },
     {
         "name": "Maria-Irina Popa",
         "role": "Support / Analysis",
-        "image": "assets/maria.png"
+        "image": "assets/maria.png",
+        "bio": "Supported analysis, testing, and helped refine the overall project direction."
     },
 ]
 
@@ -83,40 +94,48 @@ def render_member(member):
         st.markdown(
             f"""
             <div class="team-card">
-                <img class="team-img" src="data:image/jpeg;base64,{img_b64}" />
+                <img class="team-img" src="data:image/png;base64,{img_b64}" />
                 <div class="team-name">{member['name']}</div>
                 <div class="team-role">{member['role']}</div>
+                <div class="team-bio">{member['bio']}</div>
             </div>
             """,
             unsafe_allow_html=True
         )
     else:
-        st.warning(f"Image not found: {member['image']}")
         st.markdown(
             f"""
             <div class="team-card">
                 <div class="team-name">{member['name']}</div>
                 <div class="team-role">{member['role']}</div>
+                <div class="team-bio">{member['bio']}</div>
             </div>
             """,
             unsafe_allow_html=True
         )
 
-# Row 1
-left, col1, col2, right = st.columns([1, 2, 2, 1])
+# Top row: 2 members
+col1, col2 = st.columns(2)
 with col1:
     render_member(team_members[0])
 with col2:
     render_member(team_members[1])
 
-# Row 2
-left, col3, col4, right = st.columns([1, 2, 2, 1])
+# Bottom row: 3 members
+col3, col4, col5 = st.columns(3)
 with col3:
     render_member(team_members[2])
 with col4:
     render_member(team_members[3])
-
-# Centered bottom member
-left, center, right = st.columns([2, 1.5, 2])
-with center:
+with col5:
     render_member(team_members[4])
+
+st.markdown("---")
+
+st.subheader("Why We Built Raviolution")
+st.write("""
+We wanted to create a platform that combines market data, visualization, and machine learning
+into one unified experience. Raviolution was designed to make stock analysis more interactive,
+more intuitive, and more accessible by giving users a clean dashboard to monitor stocks,
+explore trading patterns, and generate model-based recommendations.
+""")

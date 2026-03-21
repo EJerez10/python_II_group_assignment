@@ -3,7 +3,6 @@ from datetime import date, timedelta
 
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 from dotenv import load_dotenv
 
@@ -11,30 +10,33 @@ from pysimfin import PySimFin
 
 load_dotenv()
 
-st.title("📊 Go Live")
+st.title("📊 Stock Overview")
 
 api_key = os.getenv("SIMFIN_API_KEY") or st.secrets["SIMFIN_API_KEY"]
 if not api_key:
-    st.error("API key not found. Check your .env file.")
+    st.error("API key not found. Check your .env file or Streamlit secrets.")
     st.stop()
 
 simfin = PySimFin(api_key)
 
 # ---------------------------
-# Sidebar: ticker selection
+# Ticker selector near title
 # ---------------------------
-st.sidebar.header("Market Inputs")
+ticker_col1, ticker_col2 = st.columns([2, 3])
 
-ticker = st.sidebar.selectbox(
-    "Popular Tickers",
-    ["AAPL", "MSFT", "TSLA", "AMZN", "GOOG", "NVDA", "META", "SPOT"]
-)
+with ticker_col1:
+    ticker = st.selectbox(
+        "Select Stock",
+        ["AAPL", "MSFT", "TSLA", "AMZN", "GOOG", "NVDA", "META", "SPOT"]
+    )
+
+with ticker_col2:
+    st.caption("Explore historical price action, moving averages, and recent trading patterns.")
 
 # ---------------------------
-# Main-page chart controls
+# Fetch broad range first
 # ---------------------------
 today = date.today()
-
 df_all = simfin.get_share_prices(ticker, "2023-01-01", str(today))
 
 if df_all.empty:
@@ -44,9 +46,9 @@ if df_all.empty:
 df_all["Date"] = pd.to_datetime(df_all["Date"])
 latest_available = df_all["Date"].max().date()
 
-st.subheader(ticker)
-st.caption("Live market view with customizable chart controls.")
-
+# ---------------------------
+# Main-page controls
+# ---------------------------
 control_col1, control_col2 = st.columns([2, 2])
 
 with control_col1:
@@ -66,10 +68,10 @@ with control_col2:
 ma_col1, ma_col2, ma_col3 = st.columns([1, 1, 3])
 
 with ma_col1:
-    show_ma10 = st.checkbox("Show 10-day MA", value=True)
+    show_ma10 = st.checkbox("10-day MA", value=False)
 
 with ma_col2:
-    show_ma20 = st.checkbox("Show 20-day MA", value=False)
+    show_ma20 = st.checkbox("20-day MA", value=False)
 
 with ma_col3:
     manual_dates = st.toggle("Use custom dates", value=False)
@@ -79,7 +81,7 @@ if manual_dates:
     with date_col1:
         start_date = st.date_input("Start Date", date(2023, 1, 1))
     with date_col2:
-        end_date = st.date_input("End Date", today)
+        end_date = st.date_input("End Date", latest_available, max_value=latest_available)
 else:
     if timeframe == "5D":
         start_date = latest_available - timedelta(days=7)
@@ -96,22 +98,22 @@ else:
 
     end_date = latest_available
 
-
 if start_date > end_date:
     st.error("Start date must be before end date.")
     st.stop()
 
 # ---------------------------
-# Fetch data
+# Filter from broad data
 # ---------------------------
-with st.spinner("Loading market data..."):
-    df = simfin.get_share_prices(ticker, str(start_date), str(end_date))
+df = df_all[
+    (df_all["Date"].dt.date >= start_date) &
+    (df_all["Date"].dt.date <= end_date)
+].copy()
 
 if df.empty:
     st.warning("No data returned for the selected ticker and date range.")
     st.stop()
 
-df["Date"] = pd.to_datetime(df["Date"])
 df = df.sort_values("Date").copy()
 
 # Moving averages
@@ -137,19 +139,36 @@ top_col2.metric("Period High", f"${period_high:,.2f}")
 top_col3.metric("Period Low", f"${period_low:,.2f}")
 top_col4.metric("Latest Volume", f"{latest_volume:,.0f}")
 
+metric_col1, metric_col2, metric_col3 = st.columns(3)
+metric_col1.metric("Average Volume", f"{avg_volume:,.0f}")
+metric_col2.metric("Trading Days", len(df))
+metric_col3.metric("Data Current As Of", str(latest_available))
+
 st.caption(f"Showing {ticker} data from {start_date} to {end_date}")
+
+# Moving average warnings
+ma_notes = []
+if show_ma10 and len(df) < 10:
+    ma_notes.append("Not enough history in the selected window to fully display the 10-day moving average.")
+if show_ma20 and len(df) < 20:
+    ma_notes.append("Not enough history in the selected window to fully display the 20-day moving average.")
+
+for note in ma_notes:
+    st.info(note)
 
 st.markdown("---")
 
 # ---------------------------
 # Main price chart
 # ---------------------------
+st.subheader(f"{ticker} Price Chart")
+
 if chart_type == "Line":
     fig_price = px.line(
         df,
         x="Date",
         y="Close",
-        title=f"{ticker} Price"
+        title=f"{ticker} Stock Price"
     )
 
     if show_ma10:
@@ -175,14 +194,12 @@ if chart_type == "Line":
     )
 
 else:
-    fig_price = go.Figure(data=[go.Candlestick(
-        x=df["Date"],
-        open=df["Open"],
-        high=df["High"],
-        low=df["Low"],
-        close=df["Close"],
-        name="Price"
-    )])
+    fig_price = px.line(
+        df,
+        x="Date",
+        y="Close",
+        title=f"{ticker} Stock Price"
+    )
 
     if show_ma10:
         fig_price.add_scatter(
@@ -201,13 +218,51 @@ else:
         )
 
     fig_price.update_layout(
-        title=f"{ticker} Candlestick Chart",
         xaxis_title="Date",
         yaxis_title="Price",
         height=500
     )
 
 st.plotly_chart(fig_price, use_container_width=True)
+
+# Optional candlestick alternative
+if chart_type == "Candlestick":
+    with st.expander("View Candlestick Chart"):
+        import plotly.graph_objects as go
+
+        fig_candle = go.Figure(data=[go.Candlestick(
+            x=df["Date"],
+            open=df["Open"],
+            high=df["High"],
+            low=df["Low"],
+            close=df["Close"],
+            name="Price"
+        )])
+
+        if show_ma10:
+            fig_candle.add_scatter(
+                x=df["Date"],
+                y=df["MA_10"],
+                mode="lines",
+                name="10-day MA"
+            )
+
+        if show_ma20:
+            fig_candle.add_scatter(
+                x=df["Date"],
+                y=df["MA_20"],
+                mode="lines",
+                name="20-day MA"
+            )
+
+        fig_candle.update_layout(
+            title=f"{ticker} Candlestick Chart",
+            xaxis_title="Date",
+            yaxis_title="Price",
+            height=500
+        )
+
+        st.plotly_chart(fig_candle, use_container_width=True)
 
 # ---------------------------
 # Volume chart
@@ -230,10 +285,10 @@ fig_vol.update_layout(
 st.plotly_chart(fig_vol, use_container_width=True)
 
 # ---------------------------
-# Market context section
+# Recent trading patterns
 # ---------------------------
 st.markdown("---")
-st.subheader(f"📰 {ticker} News & Market Context")
+st.subheader("Recent Trading Patterns")
 
 recent_5d_change = (
     ((df["Close"].iloc[-1] - df["Close"].iloc[-5]) / df["Close"].iloc[-5]) * 100
@@ -242,62 +297,62 @@ recent_5d_change = (
 
 volume_ratio = latest_volume / avg_volume if avg_volume != 0 else 1
 
-latest_ma10 = df["MA_10"].iloc[-1] if "MA_10" in df.columns and not pd.isna(df["MA_10"].iloc[-1]) else None
-latest_ma20 = df["MA_20"].iloc[-1] if "MA_20" in df.columns and not pd.isna(df["MA_20"].iloc[-1]) else None
+latest_ma10 = df["MA_10"].iloc[-1] if not pd.isna(df["MA_10"].iloc[-1]) else None
+latest_ma20 = df["MA_20"].iloc[-1] if not pd.isna(df["MA_20"].iloc[-1]) else None
 
-context_points = []
+pattern_points = []
 
 if recent_5d_change > 2:
-    context_points.append(
+    pattern_points.append(
         f"📈 {ticker} is up **{recent_5d_change:.2f}%** over the last 5 trading days, showing short-term strength."
     )
 elif recent_5d_change < -2:
-    context_points.append(
+    pattern_points.append(
         f"📉 {ticker} is down **{abs(recent_5d_change):.2f}%** over the last 5 trading days, reflecting recent weakness."
     )
 else:
-    context_points.append(
+    pattern_points.append(
         f"➖ {ticker} has moved **{recent_5d_change:.2f}%** over the last 5 trading days, indicating relatively stable short-term performance."
     )
 
 if latest_ma10 is not None:
     if latest_close > latest_ma10:
-        context_points.append(
+        pattern_points.append(
             "✅ The latest closing price is above the 10-day moving average, suggesting near-term bullish momentum."
         )
     else:
-        context_points.append(
+        pattern_points.append(
             "⚠️ The latest closing price is below the 10-day moving average, which may indicate weaker short-term momentum."
         )
 
 if latest_ma20 is not None:
     if latest_close > latest_ma20:
-        context_points.append(
+        pattern_points.append(
             "✅ The stock is trading above its 20-day moving average, reinforcing a stronger medium-term trend."
         )
     else:
-        context_points.append(
+        pattern_points.append(
             "⚠️ The stock is trading below its 20-day moving average, which may reflect softer medium-term sentiment."
         )
 
 if volume_ratio > 1.3:
-    context_points.append(
+    pattern_points.append(
         f"🔊 Trading volume is elevated at **{volume_ratio:.2f}x** the recent average, which may indicate increased market attention."
     )
 else:
-    context_points.append(
+    pattern_points.append(
         "📊 Trading volume is close to its recent average, suggesting normal trading activity."
     )
 
-news_col1, news_col2 = st.columns([2, 1])
+pattern_col1, pattern_col2 = st.columns([2, 1])
 
-with news_col1:
-    for point in context_points:
+with pattern_col1:
+    for point in pattern_points:
         st.write(point)
 
-with news_col2:
+with pattern_col2:
+    st.metric("5-Day Change", f"{recent_5d_change:+.2f}%")
     st.metric("Average Volume", f"{avg_volume:,.0f}")
-    st.metric("Trading Days", len(df))
     st.metric("Timeframe", timeframe if not manual_dates else "Custom")
 
 # ---------------------------

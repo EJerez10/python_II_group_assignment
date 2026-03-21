@@ -1,16 +1,19 @@
-import streamlit as st
-import pandas as pd
-import joblib
-import plotly.express as px
-from dotenv import load_dotenv
 import os
+from datetime import date
+
+import joblib
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
+from dotenv import load_dotenv
 
 from pysimfin import PySimFin
 from etl_pipeline import build_etl_dataset
 
 load_dotenv()
 
-st.title("📈 Model Signals")
+st.title("🤖 Recommendations")
 st.caption("Generate a model-based trading recommendation using recent market data.")
 
 api_key = os.getenv("SIMFIN_API_KEY") or st.secrets["SIMFIN_API_KEY"]
@@ -36,10 +39,10 @@ MODEL_PATHS = {
 def load_model(model_path):
     return joblib.load(model_path)
 
-st.sidebar.header("Signal Inputs")
+st.sidebar.header("Recommendation Inputs")
 
 ticker = st.sidebar.selectbox(
-    "Popular Tickers",
+    "Select Stock",
     ["AAPL", "MSFT", "TSLA", "AMZN", "GOOG", "NVDA", "META", "SPOT"]
 )
 
@@ -61,7 +64,7 @@ else:
     start_date = None
     end_date = None
 
-if st.button("Generate Signal"):
+if st.button("Generate Recommendation"):
     with st.spinner("Fetching market data, engineering features, and generating recommendation..."):
         try:
             model_path = MODEL_PATHS.get(ticker)
@@ -72,7 +75,6 @@ if st.button("Generate Signal"):
 
             loaded_model = load_model(model_path)
 
-            # Broad fetch first so we can determine latest available date
             raw_df = simfin.get_share_prices(
                 ticker,
                 "2023-01-01",
@@ -86,7 +88,6 @@ if st.button("Generate Signal"):
             raw_df["Date"] = pd.to_datetime(raw_df["Date"])
             latest_available = raw_df["Date"].max().date()
 
-            # Determine actual date window
             if use_custom_range:
                 if end_date > latest_available:
                     end_date = latest_available
@@ -117,6 +118,7 @@ if st.button("Generate Signal"):
                 st.error("No data available for the selected analysis window.")
                 st.stop()
 
+            raw_df = raw_df.sort_values("Date").copy()
             raw_df = raw_df.set_index("Date")
 
             processed_df = build_etl_dataset(raw_df, live_inference=True)
@@ -140,27 +142,33 @@ if st.button("Generate Signal"):
                     signal_label = "BUY"
                     signal_message = "The stock has shown recent upward momentum, and the model predicts further gains."
                     signal_style = "success"
+                    signal_color = "rgba(34, 197, 94, 0.20)"
                 elif recent_change_pct < -2:
                     signal_label = "BUY"
                     signal_message = "The model suggests a possible rebound despite recent weakness."
                     signal_style = "success"
+                    signal_color = "rgba(34, 197, 94, 0.20)"
                 else:
                     signal_label = "BUY"
                     signal_message = "The model predicts tomorrow's close may move higher."
                     signal_style = "success"
+                    signal_color = "rgba(34, 197, 94, 0.20)"
             else:
                 if recent_change_pct > 2:
                     signal_label = "HOLD / WATCH"
                     signal_message = "The stock has been rising recently, but the model does not confirm continued upside. Keep an eye on it over the coming days."
                     signal_style = "warning"
+                    signal_color = "rgba(234, 179, 8, 0.22)"
                 elif recent_change_pct < -2:
                     signal_label = "SELL / HOLD"
                     signal_message = "Recent price action has been weak, and the model does not suggest a near-term recovery."
                     signal_style = "error"
+                    signal_color = "rgba(239, 68, 68, 0.20)"
                 else:
                     signal_label = "HOLD"
                     signal_message = "The model predicts limited upside in the near term."
                     signal_style = "warning"
+                    signal_color = "rgba(234, 179, 8, 0.22)"
 
             st.markdown("---")
             st.subheader(f"Recommendation for {ticker}")
@@ -186,7 +194,7 @@ if st.button("Generate Signal"):
                 st.metric("Probability of Price Increase", f"{prob_up:.1%}")
 
             st.markdown("---")
-            st.subheader("Recent Price Trend")
+            st.subheader("Recommendation Signal View")
 
             chart_df = raw_df.reset_index().copy()
             fig = px.line(
@@ -195,6 +203,31 @@ if st.button("Generate Signal"):
                 y="Close",
                 title=f"{ticker} Recent Closing Prices"
             )
+
+            latest_x = chart_df["Date"].iloc[-1]
+            min_y = chart_df["Close"].tail(30).min()
+            max_y = chart_df["Close"].tail(30).max()
+
+            fig.add_vline(
+                x=latest_x,
+                line_dash="dash",
+                line_color="black"
+            )
+
+            fig.add_vrect(
+                x0=latest_x,
+                x1=latest_x + pd.Timedelta(days=5),
+                fillcolor=signal_color,
+                opacity=0.8,
+                line_width=0
+            )
+
+            fig.update_layout(
+                xaxis_title="Date",
+                yaxis_title="Close Price",
+                height=450
+            )
+
             st.plotly_chart(fig, use_container_width=True)
 
             st.subheader("Signal Summary")
@@ -218,5 +251,8 @@ The model predicts whether the next trading session is likely to close higher or
             with st.expander("View processed features used for prediction"):
                 st.dataframe(latest_row.round(3), use_container_width=True)
 
+            with st.expander("View raw market data used for this recommendation"):
+                st.dataframe(chart_df.tail(30), use_container_width=True)
+
         except Exception as e:
-            st.error(f"Error generating signal: {e}")
+            st.error(f"Error generating recommendation: {e}")

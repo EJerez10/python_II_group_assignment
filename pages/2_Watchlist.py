@@ -114,10 +114,14 @@ for ticker in selected_tickers:
         "Last Price": round(latest_row["Close"], 2),
         "Change": round(change, 2),
         "Change %": round(change_pct, 2),
-        "Volume": int(latest_row["Volume"])
+        "Volume (M)": round(latest_row["Volume"] / 1_000_000, 1)
     })
 
 watchlist_df = pd.DataFrame(snapshot_rows)
+
+watchlist_df = watchlist_df[
+    ["Ticker", "Company", "Date", "Last Price", "Change", "Change %", "Volume (M)"]
+]
 
 if watchlist_df.empty:
     st.warning("No data available for the selected stocks and date.")
@@ -151,7 +155,7 @@ styled_df = (
         "Last Price": "${:,.2f}",
         "Change": "{:+.2f}",
         "Change %": "{:+.2f}%",
-        "Volume": "{:,.0f}"
+        "Volume (M)": "{:,.1f}M"
     })
     .map(color_change, subset=["Change", "Change %"])
 )
