@@ -201,12 +201,19 @@ else:
         title=f"{ticker} Stock Price"
     )
 
+    # Make price line neutral (black)
+    fig_price.update_traces(
+        line=dict(color="black", width=2),
+        name="Price"
+    )
+
     if show_ma10:
         fig_price.add_scatter(
             x=df["Date"],
             y=df["MA_10"],
             mode="lines",
-            name="10-day MA"
+            name="10-day MA",
+            line=dict(color="#60A5FA", width=2)  # light blue
         )
 
     if show_ma20:
@@ -214,14 +221,9 @@ else:
             x=df["Date"],
             y=df["MA_20"],
             mode="lines",
-            name="20-day MA"
+            name="20-day MA",
+            line=dict(color="#1D4ED8", width=2)  # darker blue
         )
-
-    fig_price.update_layout(
-        xaxis_title="Date",
-        yaxis_title="Price",
-        height=500
-    )
 
 st.plotly_chart(fig_price, use_container_width=True)
 
