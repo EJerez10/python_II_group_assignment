@@ -18,7 +18,7 @@ track selected companies, and generate machine-learning-based trading recommenda
 This platform combines:
 - **SimFin market data**
 - **Interactive visualizations**
-- **A machine learning recommendation engine**
+- **A machine learning recommendation engine.**
 """)
 
 st.markdown("---")
