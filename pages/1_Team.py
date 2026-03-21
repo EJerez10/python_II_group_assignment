@@ -1,4 +1,6 @@
 import streamlit as st
+import base64
+from pathlib import Path
 
 st.title("👥 Meet the Team")
 st.caption("The people behind Raviolution.")
@@ -8,7 +10,6 @@ Raviolution was built through collaboration across data, machine learning,
 and application development.
 """)
 
-# ---------- STYLING ----------
 st.markdown("""
 <style>
 .team-card {
@@ -40,7 +41,6 @@ st.markdown("""
 
 st.markdown("---")
 
-# ---------- TEAM DATA ----------
 team_members = [
     {
         "name": "Enzo Jerez",
@@ -69,34 +69,53 @@ team_members = [
     },
 ]
 
-# ---------- RENDER FUNCTION ----------
+def image_to_base64(path: str) -> str:
+    p = Path(path)
+    if not p.exists():
+        return ""
+    return base64.b64encode(p.read_bytes()).decode()
+
 def render_member(member):
-    st.markdown(f"""
-    <div class="team-card">
-        <img class="team-img" src="{member['image']}" />
-        <div class="team-name">{member['name']}</div>
-        <div class="team-role">{member['role']}</div>
-    </div>
-    """, unsafe_allow_html=True)
+    img_b64 = image_to_base64(member["image"])
 
-# ---------- ROW 1 ----------
+    if img_b64:
+        st.markdown(
+            f"""
+            <div class="team-card">
+                <img class="team-img" src="data:image/jpeg;base64,{img_b64}" />
+                <div class="team-name">{member['name']}</div>
+                <div class="team-role">{member['role']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    else:
+        st.warning(f"Image not found: {member['image']}")
+        st.markdown(
+            f"""
+            <div class="team-card">
+                <div class="team-name">{member['name']}</div>
+                <div class="team-role">{member['role']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+# Row 1
 left, col1, col2, right = st.columns([1, 2, 2, 1])
-
 with col1:
     render_member(team_members[0])
 with col2:
     render_member(team_members[1])
 
-# ---------- ROW 2 ----------
+# Row 2
 left, col3, col4, right = st.columns([1, 2, 2, 1])
-
 with col3:
     render_member(team_members[2])
 with col4:
     render_member(team_members[3])
 
-# ---------- CENTERED MEMBER ----------
+# Centered bottom member
 left, center, right = st.columns([2, 1.5, 2])
-
 with center:
     render_member(team_members[4])
