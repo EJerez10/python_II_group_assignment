@@ -6,7 +6,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.image("assets/logo.png", width=180)
+st.image("assets/logo.jpg", width=180)
 
 st.title("📈 Raviolution")
 st.subheader("AI-Powered Trading Dashboard")
