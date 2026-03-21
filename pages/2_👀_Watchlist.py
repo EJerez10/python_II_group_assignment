@@ -26,7 +26,7 @@ watchlist = {
     "MSFT": "Microsoft Corp.",
     "TSLA": "Tesla Inc.",
     "AMZN": "Amazon.com Inc.",
-    "GOOGL": "Alphabet Inc.",
+    "GOOG": "Alphabet Inc.",
     "NVDA": "NVIDIA Corp.",
     "META": "Meta Platforms Inc.",
     "SPOT": "Spotify Technology S.A."

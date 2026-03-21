@@ -27,7 +27,7 @@ st.sidebar.header("Market Inputs")
 
 ticker = st.sidebar.selectbox(
     "Popular Tickers",
-    ["AAPL", "MSFT", "TSLA", "AMZN", "GOOGL", "NVDA", "META", "SPOT"]
+    ["AAPL", "MSFT", "TSLA", "AMZN", "GOOG", "NVDA", "META", "SPOT"]
 )
 
 # ---------------------------

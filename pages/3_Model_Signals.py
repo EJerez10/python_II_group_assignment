@@ -25,7 +25,7 @@ st.sidebar.header("Signal Inputs")
 
 ticker = st.sidebar.selectbox(
     "Popular Tickers",
-    ["AAPL", "MSFT", "TSLA", "AMZN", "GOOGL", "NVDA"]
+    ["AAPL", "MSFT", "TSLA", "AMZN", "GOOG", "NVDA"]
 )
 
 start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2023-01-01"))
