@@ -34,11 +34,11 @@ watchlist = {
 
 @st.cache_data(show_spinner=False)
 def get_watchlist_row(ticker, company):
-    # Pull a wider recent window so we can compare latest vs previous close
-    start_date = (date.today() - timedelta(days=20)).isoformat()
-    end_date = date.today().isoformat()
+    # Broad fetch first
+    broad_start = "2023-01-01"
+    broad_end = date.today().isoformat()
 
-    df = simfin.get_share_prices(ticker, start_date, end_date)
+    df = simfin.get_share_prices(ticker, broad_start, broad_end)
 
     if df.empty:
         return {
@@ -53,6 +53,10 @@ def get_watchlist_row(ticker, company):
     df["Date"] = pd.to_datetime(df["Date"])
     df = df.sort_values("Date").copy()
 
+    # Use latest available SimFin date, not today's date
+    latest_available = df["Date"].max()
+    df = df[df["Date"] <= latest_available].copy()
+
     latest = df.iloc[-1]
     previous_close = df.iloc[-2]["Close"] if len(df) > 1 else latest["Close"]
 
@@ -65,8 +69,12 @@ def get_watchlist_row(ticker, company):
         "Last Price": round(latest["Close"], 2),
         "Change": round(change, 2),
         "Change %": round(change_pct, 2),
-        "Volume": int(latest["Volume"])
+        "Volume": int(latest["Volume"]),
+        "As Of": latest_available.date()
     }
+
+latest_snapshot = watchlist_df["As Of"].dropna().max()
+st.caption(f"Watchlist based on latest available SimFin data: {latest_snapshot}")
 
 with st.spinner("Loading watchlist..."):
     rows = [get_watchlist_row(ticker, company) for ticker, company in watchlist.items()]
