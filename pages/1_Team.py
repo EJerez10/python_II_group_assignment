@@ -15,7 +15,7 @@ team_members = [
     {
         "name": "Enzo Jerez",
         "role": "Web App Development",
-        "image": "assets/enzo.jpg"
+        "image": "assets/enzo_jerez.jpeg"
     },
     {
         "name": "Roberto Cummings",
