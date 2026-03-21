@@ -171,37 +171,7 @@ if chart_type == "Line":
         title=f"{ticker} Stock Price"
     )
 
-    if show_ma10:
-        fig_price.add_scatter(
-            x=df["Date"],
-            y=df["MA_10"],
-            mode="lines",
-            name="10-day MA"
-        )
-
-    if show_ma20:
-        fig_price.add_scatter(
-            x=df["Date"],
-            y=df["MA_20"],
-            mode="lines",
-            name="20-day MA"
-        )
-
-    fig_price.update_layout(
-        xaxis_title="Date",
-        yaxis_title="Price",
-        height=500
-    )
-
-else:
-    fig_price = px.line(
-        df,
-        x="Date",
-        y="Close",
-        title=f"{ticker} Stock Price"
-    )
-
-    # Make price line neutral (black)
+    # Price line (neutral)
     fig_price.update_traces(
         line=dict(color="black", width=2),
         name="Price"
@@ -213,7 +183,7 @@ else:
             y=df["MA_10"],
             mode="lines",
             name="10-day MA",
-            line=dict(color="#60A5FA", width=2)  # light blue
+            line=dict(color="#60A5FA", width=2)
         )
 
     if show_ma20:
@@ -222,10 +192,55 @@ else:
             y=df["MA_20"],
             mode="lines",
             name="20-day MA",
-            line=dict(color="#1D4ED8", width=2)  # darker blue
+            line=dict(color="#1D4ED8", width=2)
         )
 
-st.plotly_chart(fig_price, use_container_width=True)
+    fig_price.update_layout(
+        xaxis_title="Date",
+        yaxis_title="Price",
+        height=500
+    )
+
+    st.plotly_chart(fig_price, use_container_width=True)
+
+else:  # Candlestick
+    import plotly.graph_objects as go
+
+    fig_candle = go.Figure(data=[go.Candlestick(
+        x=df["Date"],
+        open=df["Open"],
+        high=df["High"],
+        low=df["Low"],
+        close=df["Close"],
+        name="Price"
+    )])
+
+    if show_ma10:
+        fig_candle.add_scatter(
+            x=df["Date"],
+            y=df["MA_10"],
+            mode="lines",
+            name="10-day MA",
+            line=dict(color="#60A5FA", width=2)
+        )
+
+    if show_ma20:
+        fig_candle.add_scatter(
+            x=df["Date"],
+            y=df["MA_20"],
+            mode="lines",
+            name="20-day MA",
+            line=dict(color="#1D4ED8", width=2)
+        )
+
+    fig_candle.update_layout(
+        title=f"{ticker} Candlestick Chart",
+        xaxis_title="Date",
+        yaxis_title="Price",
+        height=500
+    )
+
+    st.plotly_chart(fig_candle, use_container_width=True)
 
 # Optional candlestick alternative
 if chart_type == "Candlestick":
