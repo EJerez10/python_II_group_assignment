@@ -1,6 +1,5 @@
 import os
-from datetime import date, timedelta
-
+from datetime import date
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
@@ -10,7 +9,7 @@ from pysimfin import PySimFin
 load_dotenv()
 
 st.title("👀 Watchlist")
-st.caption("Track key market information for our selected stocks.")
+st.caption("Track selected stocks and view their latest available performance for a chosen date.")
 
 api_key = os.getenv("SIMFIN_API_KEY") or st.secrets["SIMFIN_API_KEY"]
 
@@ -20,7 +19,6 @@ if not api_key:
 
 simfin = PySimFin(api_key)
 
-# Fixed watchlist
 watchlist = {
     "AAPL": "Apple Inc.",
     "MSFT": "Microsoft Corp.",
@@ -33,52 +31,111 @@ watchlist = {
 }
 
 @st.cache_data(show_spinner=False)
-def get_watchlist_row(ticker, company):
-    # Broad fetch first
-    broad_start = "2023-01-01"
-    broad_end = date.today().isoformat()
+def load_watchlist_data():
+    all_rows = []
 
-    df = simfin.get_share_prices(ticker, broad_start, broad_end)
+    for ticker, company in watchlist.items():
+        df = simfin.get_share_prices(ticker, "2023-01-01", str(date.today()))
 
-    if df.empty:
-        return {
-            "Company": company,
-            "Ticker": ticker,
-            "Last Price": None,
-            "Change": None,
-            "Change %": None,
-            "Volume": None
-        }
+        if df.empty:
+            continue
 
-    df["Date"] = pd.to_datetime(df["Date"])
-    df = df.sort_values("Date").copy()
+        df["Date"] = pd.to_datetime(df["Date"])
+        df = df.sort_values("Date").copy()
+        df["Ticker"] = ticker
+        df["Company"] = company
 
-    # Use latest available SimFin date, not today's date
-    latest_available = df["Date"].max()
-    df = df[df["Date"] <= latest_available].copy()
+        all_rows.append(df)
 
-    latest = df.iloc[-1]
-    previous_close = df.iloc[-2]["Close"] if len(df) > 1 else latest["Close"]
+    if not all_rows:
+        return pd.DataFrame()
 
-    change = latest["Close"] - previous_close
-    change_pct = (change / previous_close * 100) if previous_close != 0 else 0
+    return pd.concat(all_rows, ignore_index=True)
 
-    return {
-        "Company": company,
-        "Ticker": ticker,
-        "Last Price": round(latest["Close"], 2),
+all_data = load_watchlist_data()
+
+if all_data.empty:
+    st.warning("No watchlist data returned from SimFin.")
+    st.stop()
+
+latest_available = all_data["Date"].max().date()
+
+# Controls
+control_col1, control_col2 = st.columns([2, 1])
+
+with control_col1:
+    selected_tickers = st.multiselect(
+        "Select stocks",
+        options=list(watchlist.keys()),
+        default=list(watchlist.keys())
+    )
+
+with control_col2:
+    snapshot_date = st.date_input(
+        "Snapshot date",
+        value=latest_available,
+        max_value=latest_available
+    )
+
+if not selected_tickers:
+    st.warning("Please select at least one stock.")
+    st.stop()
+
+filtered_data = all_data[all_data["Ticker"].isin(selected_tickers)].copy()
+
+# For each ticker, get the latest available row on or before snapshot_date
+snapshot_rows = []
+
+for ticker in selected_tickers:
+    stock_df = filtered_data[
+        (filtered_data["Ticker"] == ticker) &
+        (filtered_data["Date"].dt.date <= snapshot_date)
+    ].sort_values("Date")
+
+    if stock_df.empty:
+        continue
+
+    latest_row = stock_df.iloc[-1]
+
+    # previous close for change calculation
+    prev_rows = stock_df.iloc[:-1]
+    if not prev_rows.empty:
+        prev_close = prev_rows.iloc[-1]["Close"]
+    else:
+        prev_close = latest_row["Close"]
+
+    change = latest_row["Close"] - prev_close
+    change_pct = (change / prev_close * 100) if prev_close != 0 else 0
+
+    snapshot_rows.append({
+        "Company": latest_row["Company"],
+        "Ticker": latest_row["Ticker"],
+        "Date": latest_row["Date"].date(),
+        "Last Price": round(latest_row["Close"], 2),
         "Change": round(change, 2),
         "Change %": round(change_pct, 2),
-        "Volume": int(latest["Volume"]),
-        "As Of": latest_available.date()
-    }
+        "Volume": int(latest_row["Volume"])
+    })
 
-with st.spinner("Loading watchlist..."):
-    rows = [get_watchlist_row(ticker, company) for ticker, company in watchlist.items()]
+watchlist_df = pd.DataFrame(snapshot_rows)
 
-watchlist_df = pd.DataFrame(rows)
+if watchlist_df.empty:
+    st.warning("No data available for the selected stocks and date.")
+    st.stop()
 
-# Optional formatting helpers
+# Summary metrics
+gainers = (watchlist_df["Change"] > 0).sum()
+losers = (watchlist_df["Change"] < 0).sum()
+
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("Stocks Displayed", len(watchlist_df))
+col2.metric("Gainers", int(gainers))
+col3.metric("Losers", int(losers))
+col4.metric("Latest Available API Date", str(latest_available))
+
+st.caption(f"Showing watchlist snapshot for {snapshot_date} using the latest available trading day on or before that date.")
+
+# Style helpers
 def color_change(val):
     if pd.isna(val):
         return ""
@@ -95,23 +152,16 @@ styled_df = (
         "Change": "{:+.2f}",
         "Change %": "{:+.2f}%",
         "Volume": "{:,.0f}"
-    }, na_rep="N/A")
+    })
     .map(color_change, subset=["Change", "Change %"])
 )
 
-# Top summary row
-valid_prices = watchlist_df["Last Price"].notna().sum()
-gainers = (watchlist_df["Change"] > 0).sum()
-losers = (watchlist_df["Change"] < 0).sum()
-
-col1, col2, col3 = st.columns(3)
-col1.metric("Stocks Tracked", len(watchlist_df))
-col2.metric("Gainers", int(gainers))
-col3.metric("Losers", int(losers))
-
 st.markdown("---")
-
 st.subheader("Watchlist Snapshot")
 st.dataframe(styled_df, use_container_width=True)
 
-st.info("Use the Overview page to inspect a stock in detail, and the Recommendations page to view the ML-based trading signal.")
+with st.expander("View raw watchlist data"):
+    st.dataframe(
+        filtered_data.sort_values(["Ticker", "Date"]),
+        use_container_width=True
+    )
