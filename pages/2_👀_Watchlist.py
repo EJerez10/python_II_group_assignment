@@ -73,9 +73,6 @@ def get_watchlist_row(ticker, company):
         "As Of": latest_available.date()
     }
 
-latest_snapshot = watchlist_df["As Of"].dropna().max()
-st.caption(f"Watchlist based on latest available SimFin data: {latest_snapshot}")
-
 with st.spinner("Loading watchlist..."):
     rows = [get_watchlist_row(ticker, company) for ticker, company in watchlist.items()]
 
