@@ -39,23 +39,31 @@ MODEL_PATHS = {
 def load_model(model_path):
     return joblib.load(model_path)
 
-st.sidebar.header("Recommendation Inputs")
+st.subheader("Select Stock & Analysis Window")
 
-ticker = st.sidebar.selectbox(
-    "Select Stock",
-    ["AAPL", "MSFT", "TSLA", "AMZN", "GOOG", "NVDA", "META", "SPOT"]
-)
+input_col1, input_col2 = st.columns([2, 2])
 
-timeframe = st.sidebar.radio(
-    "Analysis Window",
-    ["1M", "3M", "6M", "YTD", "1Y"]
-)
+with input_col1:
+    ticker = st.selectbox(
+        "Select Stock",
+        ["AAPL", "MSFT", "TSLA", "AMZN", "GOOG", "NVDA", "META", "SPOT"]
+    )
 
-use_custom_range = st.sidebar.toggle("Use Custom Date Range", value=False)
+with input_col2:
+    timeframe = st.radio(
+        "Analysis Window",
+        ["1M", "3M", "6M", "YTD", "1Y"],
+        horizontal=True
+    )
+
+use_custom_range = st.toggle("Use Custom Date Range", value=False)
 
 if use_custom_range:
-    start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2023-01-01"))
-    end_date = st.sidebar.date_input("End Date", pd.to_datetime("2024-12-31"))
+    date_col1, date_col2 = st.columns(2)
+    with date_col1:
+        start_date = st.date_input("Start Date", pd.to_datetime("2023-01-01"))
+    with date_col2:
+        end_date = st.date_input("End Date", pd.to_datetime("2024-12-31"))
 
     if start_date > end_date:
         st.error("Start date must be before end date.")
@@ -141,53 +149,93 @@ if st.button("Generate Recommendation"):
                 if recent_change_pct > 2:
                     signal_label = "BUY"
                     signal_message = "The stock has shown recent upward momentum, and the model predicts further gains."
-                    signal_style = "success"
-                    signal_color = "rgba(34, 197, 94, 0.20)"
+                    signal_color = "green"
+                    signal_bg = "#DCFCE7"
+                    signal_text = "#166534"
+                    zone_color = "rgba(34, 197, 94, 0.20)"
                 elif recent_change_pct < -2:
                     signal_label = "BUY"
                     signal_message = "The model suggests a possible rebound despite recent weakness."
-                    signal_style = "success"
-                    signal_color = "rgba(34, 197, 94, 0.20)"
+                    signal_color = "green"
+                    signal_bg = "#DCFCE7"
+                    signal_text = "#166534"
+                    zone_color = "rgba(34, 197, 94, 0.20)"
                 else:
                     signal_label = "BUY"
                     signal_message = "The model predicts tomorrow's close may move higher."
-                    signal_style = "success"
-                    signal_color = "rgba(34, 197, 94, 0.20)"
+                    signal_color = "green"
+                    signal_bg = "#DCFCE7"
+                    signal_text = "#166534"
+                    zone_color = "rgba(34, 197, 94, 0.20)"
             else:
                 if recent_change_pct > 2:
                     signal_label = "HOLD / WATCH"
                     signal_message = "The stock has been rising recently, but the model does not confirm continued upside. Keep an eye on it over the coming days."
-                    signal_style = "warning"
-                    signal_color = "rgba(234, 179, 8, 0.22)"
+                    signal_color = "orange"
+                    signal_bg = "#FEF3C7"
+                    signal_text = "#92400E"
+                    zone_color = "rgba(234, 179, 8, 0.22)"
                 elif recent_change_pct < -2:
                     signal_label = "SELL / HOLD"
                     signal_message = "Recent price action has been weak, and the model does not suggest a near-term recovery."
-                    signal_style = "error"
-                    signal_color = "rgba(239, 68, 68, 0.20)"
+                    signal_color = "red"
+                    signal_bg = "#FEE2E2"
+                    signal_text = "#991B1B"
+                    zone_color = "rgba(239, 68, 68, 0.20)"
                 else:
                     signal_label = "HOLD"
                     signal_message = "The model predicts limited upside in the near term."
-                    signal_style = "warning"
-                    signal_color = "rgba(234, 179, 8, 0.22)"
+                    signal_color = "orange"
+                    signal_bg = "#FEF3C7"
+                    signal_text = "#92400E"
+                    zone_color = "rgba(234, 179, 8, 0.22)"
 
             st.markdown("---")
             st.subheader(f"Recommendation for {ticker}")
 
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("Ticker", ticker)
-            col2.metric("Recommendation", signal_label)
+            with col2:
+                st.markdown(
+                    f"**Recommendation:** <span style='color:{signal_color}'>{signal_label}</span>",
+                    unsafe_allow_html=True
+                )
             col3.metric("Latest Close", f"${latest_close:,.2f}")
             col4.metric("5-Day Change", f"{recent_change_pct:+.2f}%")
 
-            st.caption(f"Model used: {model_path}")
-            st.caption(f"Recommendation based on latest available SimFin data: {latest_available}")
+            st.markdown(
+                f"""
+                <div style="color:#10B981; font-size:0.85rem; font-style:italic; margin-bottom:4px;">
+                Model used: {model_path}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-            if signal_style == "success":
-                st.success(signal_message)
-            elif signal_style == "warning":
-                st.warning(signal_message)
-            else:
-                st.error(signal_message)
+            st.markdown(
+                f"""
+                <div style="color:#10B981; font-size:0.85rem; font-style:italic; margin-bottom:8px;">
+                Recommendation based on latest available data: {latest_available}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+            st.markdown(
+                f"""
+                <div style="
+                    background-color:{signal_bg};
+                    color:{signal_text};
+                    padding:12px;
+                    border-radius:10px;
+                    font-size:0.95rem;
+                    margin-bottom:12px;
+                ">
+                {signal_message}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
             if hasattr(loaded_model, "predict_proba"):
                 prob_up = loaded_model.predict_proba(latest_row)[0][1]
@@ -204,9 +252,12 @@ if st.button("Generate Recommendation"):
                 title=f"{ticker} Recent Closing Prices"
             )
 
+            fig.update_traces(
+                line=dict(color="black", width=2),
+                name="Price"
+            )
+
             latest_x = chart_df["Date"].iloc[-1]
-            min_y = chart_df["Close"].tail(30).min()
-            max_y = chart_df["Close"].tail(30).max()
 
             fig.add_vline(
                 x=latest_x,
@@ -217,7 +268,7 @@ if st.button("Generate Recommendation"):
             fig.add_vrect(
                 x0=latest_x,
                 x1=latest_x + pd.Timedelta(days=5),
-                fillcolor=signal_color,
+                fillcolor=zone_color,
                 opacity=0.8,
                 line_width=0
             )
