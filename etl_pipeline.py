@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def build_etl_dataset(company_df):
+def build_etl_dataset(company_df, live_inference=False):
     # Copy
     df = company_df.copy()
 
