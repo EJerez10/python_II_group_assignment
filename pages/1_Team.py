@@ -45,27 +45,27 @@ team_members = [
     {
         "name": "Enzo Jerez",
         "role": "Web App Development",
-        "image": "assets/enzo_jerez.jpeg"
+        "image": "assets/enzo.png"
     },
     {
         "name": "Roberto Cummings",
         "role": "Machine Learning",
-        "image": "assets/roberto_cummings.jpeg"
+        "image": "assets/roberto.png"
     },
     {
         "name": "Jia Yi Rachel Lee",
         "role": "ETL / Data",
-        "image": "assets/jiayirachel_lee.jpeg"
+        "image": "assets/rachel.png"
     },
     {
         "name": "Thomas-Christian Manteco",
         "role": "Research / UX",
-        "image": "assets/thomaschristian_matenco.jpeg"
+        "image": "assets/thomas.png"
     },
     {
         "name": "Maria-Irina Popa",
         "role": "Support / Analysis",
-        "image": "assets/maria-irina_popa.jpeg"
+        "image": "assets/maria.png"
     },
 ]
 
