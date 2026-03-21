@@ -43,12 +43,23 @@ ticker = st.sidebar.selectbox(
     ["AAPL", "MSFT", "TSLA", "AMZN", "GOOG", "NVDA", "META", "SPOT"]
 )
 
-start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2023-01-01"))
-end_date = st.sidebar.date_input("End Date", pd.to_datetime("2024-12-31"))
+timeframe = st.sidebar.radio(
+    "Analysis Window",
+    ["1M", "3M", "6M", "YTD", "1Y"]
+)
 
-if start_date > end_date:
-    st.error("Start date must be before end date.")
-    st.stop()
+use_custom_range = st.sidebar.toggle("Use Custom Date Range", value=False)
+
+if use_custom_range:
+    start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2023-01-01"))
+    end_date = st.sidebar.date_input("End Date", pd.to_datetime("2024-12-31"))
+
+    if start_date > end_date:
+        st.error("Start date must be before end date.")
+        st.stop()
+else:
+    start_date = None
+    end_date = None
 
 if st.button("Generate Signal"):
     with st.spinner("Fetching market data, engineering features, and generating recommendation..."):
@@ -61,15 +72,51 @@ if st.button("Generate Signal"):
 
             loaded_model = load_model(model_path)
 
-            raw_df = simfin.get_share_prices(ticker, str(start_date), str(end_date))
+            # Broad fetch first so we can determine latest available date
+            raw_df = simfin.get_share_prices(
+                ticker,
+                "2023-01-01",
+                str(pd.Timestamp.today().date())
+            )
 
             if raw_df.empty:
                 st.error("No data returned from SimFin.")
                 st.stop()
 
             raw_df["Date"] = pd.to_datetime(raw_df["Date"])
-            latest_available = raw_df["Date"].max()
-            raw_df = raw_df[raw_df["Date"] <= latest_available].copy()
+            latest_available = raw_df["Date"].max().date()
+
+            # Determine actual date window
+            if use_custom_range:
+                if end_date > latest_available:
+                    end_date = latest_available
+            else:
+                if timeframe == "1M":
+                    start_date = latest_available - pd.Timedelta(days=30)
+                elif timeframe == "3M":
+                    start_date = latest_available - pd.Timedelta(days=90)
+                elif timeframe == "6M":
+                    start_date = latest_available - pd.Timedelta(days=180)
+                elif timeframe == "YTD":
+                    start_date = pd.Timestamp(
+                        year=latest_available.year,
+                        month=1,
+                        day=1
+                    ).date()
+                else:  # 1Y
+                    start_date = latest_available - pd.Timedelta(days=365)
+
+                end_date = latest_available
+
+            raw_df = raw_df[
+                (raw_df["Date"].dt.date >= start_date) &
+                (raw_df["Date"].dt.date <= end_date)
+            ].copy()
+
+            if raw_df.empty:
+                st.error("No data available for the selected analysis window.")
+                st.stop()
+
             raw_df = raw_df.set_index("Date")
 
             processed_df = build_etl_dataset(raw_df, live_inference=True)
@@ -125,7 +172,7 @@ if st.button("Generate Signal"):
             col4.metric("5-Day Change", f"{recent_change_pct:+.2f}%")
 
             st.caption(f"Model used: {model_path}")
-            st.caption(f"Recommendation based on latest available SimFin data: {latest_available.date()}")
+            st.caption(f"Recommendation based on latest available SimFin data: {latest_available}")
 
             if signal_style == "success":
                 st.success(signal_message)
@@ -134,7 +181,6 @@ if st.button("Generate Signal"):
             else:
                 st.error(signal_message)
 
-            # Optional probability if supported
             if hasattr(loaded_model, "predict_proba"):
                 prob_up = loaded_model.predict_proba(latest_row)[0][1]
                 st.metric("Probability of Price Increase", f"{prob_up:.1%}")
