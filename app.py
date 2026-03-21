@@ -1,58 +1,66 @@
 import streamlit as st
 
-st.set_page_config(page_title="Raviolution", layout="wide")
+st.set_page_config(
+    page_title="Raviolution",
+    page_icon="📈",
+    layout="wide"
+)
+
+st.image("assets/logo.png", width=180)
 
 st.title("📈 Raviolution")
 st.subheader("AI-Powered Trading Dashboard")
 
 st.markdown("""
-Welcome to **Raviolution**, a web-based trading system designed to help users explore market data,
-monitor selected stocks, and generate machine-learning-based trading recommendations.
+Welcome to **Raviolution**, a web-based trading system built to help users explore stock performance,
+track selected companies, and generate machine-learning-based trading recommendations.
 
 This platform combines:
-- **SimFin financial market data**
+- **SimFin market data**
 - **Interactive visualizations**
-- **A machine learning model for stock recommendations**
+- **A machine learning recommendation engine**
 """)
 
 st.markdown("---")
 
-st.subheader("What you can do in this app")
+st.subheader("What You Can Do")
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     st.markdown("""
 ### 👀 Watchlist
-View your selected stocks in one place, including:
+Monitor a curated list of major stocks and quickly compare:
 - latest price
 - daily change
 - trading volume
 """)
 
+with col2:
     st.markdown("""
-### 📊 Stock Overview
-Inspect a specific stock in more detail:
-- price chart
-- candlestick chart
+### 📊 Overview
+Explore each stock in more detail with:
+- price charts
+- candlestick view
 - moving averages
 - timeframe filters
 """)
 
-with col2:
+with col3:
     st.markdown("""
 ### 🤖 Recommendations
-Generate a model-based signal for a selected stock:
-- BUY
-- HOLD / WATCH
-- SELL / HOLD
-""")
-
-    st.markdown("""
-### 👥 Team
-Learn more about the creators of the project and the motivation behind the system.
+Generate a model-based stock recommendation using:
+- ticker-specific ML models
+- engineered market features
+- recent price behavior
 """)
 
 st.markdown("---")
 
-st.info("Use the navigation menu on the left to explore the platform.")
+st.subheader("Why We Built Raviolution")
+
+st.write("""
+We wanted to build a platform that makes market analysis more visual, more interactive,
+and easier to understand. By combining financial data with machine learning in one place,
+Raviolution provides a simplified trading dashboard experience inspired by real financial platforms.
+""")
