@@ -67,9 +67,10 @@ if st.button("Generate Signal"):
                 st.error("No data returned from SimFin.")
                 st.stop()
 
-            if "Date" in raw_df.columns:
-                raw_df["Date"] = pd.to_datetime(raw_df["Date"])
-                raw_df = raw_df.set_index("Date")
+            raw_df["Date"] = pd.to_datetime(raw_df["Date"])
+            latest_available = raw_df["Date"].max()
+            raw_df = raw_df[raw_df["Date"] <= latest_available].copy()
+            raw_df = raw_df.set_index("Date")
 
             processed_df = build_etl_dataset(raw_df, live_inference=True)
 
@@ -124,6 +125,7 @@ if st.button("Generate Signal"):
             col4.metric("5-Day Change", f"{recent_change_pct:+.2f}%")
 
             st.caption(f"Model used: {model_path}")
+            st.caption(f"Recommendation based on latest available SimFin data: {latest_available.date()}")
 
             if signal_style == "success":
                 st.success(signal_message)
