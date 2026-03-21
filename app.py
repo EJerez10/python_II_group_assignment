@@ -1,27 +1,58 @@
 import streamlit as st
 
-st.set_page_config(page_title="SimFin Dashboard", layout="wide")
+st.set_page_config(page_title="Raviolution", layout="wide")
 
-st.title("📈 AI Trading Dashboard")
+st.title("📈 Raviolution")
+st.subheader("AI-Powered Trading Dashboard")
 
 st.markdown("""
-Welcome to our web-based trading system built with **SimFin**, **Streamlit**, and a **machine learning model**.
+Welcome to **Raviolution**, a web-based trading system designed to help users explore market data,
+monitor selected stocks, and generate machine-learning-based trading recommendations.
 
-This platform allows users to:
-- explore historical stock market data
-- review company financial information
-- generate model-based trading signals
+This platform combines:
+- **SimFin financial market data**
+- **Interactive visualizations**
+- **A machine learning model for stock recommendations**
 """)
 
-st.subheader("Pages")
-st.markdown("""
-- **Go Live** → explore historical market data and company performance  
-- **Model Signals** → generate machine learning trading recommendations  
+st.markdown("---")
+
+st.subheader("What you can do in this app")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+### 👀 Watchlist
+View your selected stocks in one place, including:
+- latest price
+- daily change
+- trading volume
 """)
 
-st.subheader("Team")
-st.write("Enzo Jerez")
-st.write("Roberto Cummings")
-st.write("Jia Yi Rachel Lee")
-st.write("Thomas Christan Matenco")
-st.write("Maria-Irina Popa")
+    st.markdown("""
+### 📊 Stock Overview
+Inspect a specific stock in more detail:
+- price chart
+- candlestick chart
+- moving averages
+- timeframe filters
+""")
+
+with col2:
+    st.markdown("""
+### 🤖 Recommendations
+Generate a model-based signal for a selected stock:
+- BUY
+- HOLD / WATCH
+- SELL / HOLD
+""")
+
+    st.markdown("""
+### 👥 Team
+Learn more about the creators of the project and the motivation behind the system.
+""")
+
+st.markdown("---")
+
+st.info("Use the navigation menu on the left to explore the platform.")
