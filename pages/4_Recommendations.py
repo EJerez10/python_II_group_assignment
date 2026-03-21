@@ -19,7 +19,25 @@ if not api_key:
     st.stop()
 
 simfin = PySimFin(api_key)
-loaded_model = joblib.load("gradient_boosting_model.joblib")
+
+MODEL_PATHS = {
+    "AAPL": "gradient_boosting_AAPL.joblib",
+    "MSFT": "gradient_boosting_MSFT.joblib",
+    "TSLA": "gradient_boosting_TSLA.joblib",
+    "AMZN": "gradient_boosting_AMZN.joblib",
+    "GOOG": "gradient_boosting_GOOG.joblib",
+    "NVDA": "gradient_boosting_NVDA.joblib",
+    "META": "gradient_boosting_META.joblib",
+    "SPOT": "gradient_boosting_SPOT.joblib",
+}
+
+model_path = MODEL_PATHS.get(ticker)
+
+if not model_path:
+    st.error(f"No model found for ticker {ticker}.")
+    st.stop()
+
+loaded_model = joblib.load(model_path)
 
 st.sidebar.header("Signal Inputs")
 
