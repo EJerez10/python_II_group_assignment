@@ -230,27 +230,70 @@ fig_vol.update_layout(
 st.plotly_chart(fig_vol, use_container_width=True)
 
 # ---------------------------
-# Company news placeholder
+# Market context section
 # ---------------------------
 st.markdown("---")
 st.subheader(f"📰 {ticker} News & Market Context")
 
+recent_5d_change = (
+    ((df["Close"].iloc[-1] - df["Close"].iloc[-5]) / df["Close"].iloc[-5]) * 100
+    if len(df) >= 5 else 0
+)
+
+volume_ratio = latest_volume / avg_volume if avg_volume != 0 else 1
+
+latest_ma10 = df["MA_10"].iloc[-1] if "MA_10" in df.columns and not pd.isna(df["MA_10"].iloc[-1]) else None
+latest_ma20 = df["MA_20"].iloc[-1] if "MA_20" in df.columns and not pd.isna(df["MA_20"].iloc[-1]) else None
+
+context_points = []
+
+if recent_5d_change > 2:
+    context_points.append(
+        f"📈 {ticker} is up **{recent_5d_change:.2f}%** over the last 5 trading days, showing short-term strength."
+    )
+elif recent_5d_change < -2:
+    context_points.append(
+        f"📉 {ticker} is down **{abs(recent_5d_change):.2f}%** over the last 5 trading days, reflecting recent weakness."
+    )
+else:
+    context_points.append(
+        f"➖ {ticker} has moved **{recent_5d_change:.2f}%** over the last 5 trading days, indicating relatively stable short-term performance."
+    )
+
+if latest_ma10 is not None:
+    if latest_close > latest_ma10:
+        context_points.append(
+            "✅ The latest closing price is above the 10-day moving average, suggesting near-term bullish momentum."
+        )
+    else:
+        context_points.append(
+            "⚠️ The latest closing price is below the 10-day moving average, which may indicate weaker short-term momentum."
+        )
+
+if latest_ma20 is not None:
+    if latest_close > latest_ma20:
+        context_points.append(
+            "✅ The stock is trading above its 20-day moving average, reinforcing a stronger medium-term trend."
+        )
+    else:
+        context_points.append(
+            "⚠️ The stock is trading below its 20-day moving average, which may reflect softer medium-term sentiment."
+        )
+
+if volume_ratio > 1.3:
+    context_points.append(
+        f"🔊 Trading volume is elevated at **{volume_ratio:.2f}x** the recent average, which may indicate increased market attention."
+    )
+else:
+    context_points.append(
+        "📊 Trading volume is close to its recent average, suggesting normal trading activity."
+    )
+
 news_col1, news_col2 = st.columns([2, 1])
 
 with news_col1:
-    st.info(
-        "News feed placeholder: this section can later display recent headlines, "
-        "company developments, and market-moving events related to the selected ticker."
-    )
-
-    st.markdown("""
-**Example future content:**
-- Latest earnings updates
-- Analyst rating changes
-- Major company announcements
-- Sector-specific news
-- Macroeconomic events affecting the stock
-""")
+    for point in context_points:
+        st.write(point)
 
 with news_col2:
     st.metric("Average Volume", f"{avg_volume:,.0f}")
