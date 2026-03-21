@@ -30,7 +30,7 @@ team_members = [
     {
         "name": "Thomas-Christian Manteco",
         "role": "Research / UX",
-        "image": "assets/thomaschristian_manteco.jpeg"
+        "image": "assets/thomaschristian_matenco.jpeg"
     },
     {
         "name": "Maria-Irina Popa",
