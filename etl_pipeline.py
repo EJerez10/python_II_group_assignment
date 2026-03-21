@@ -1,41 +1,37 @@
 import pandas as pd
 import numpy as np
 
-def build_etl_dataset(company_df, live_inference=False):
+def build_etl_dataset(company_df):
+    # Copy
+    df = company_df.copy()
 
-    df = company_df.copy().sort_index()
+    # Convert index to proper datetime, then sort by date
+    df.index = pd.to_datetime(df.index)
+    df = df.sort_index()
 
-    # Keep only the core columns
-    df = df[['Open', 'High', 'Low', 'Close', 'Volume']].copy()
+    # Keep only needed raw columns
+    df = df[['Open', 'Close', 'Volume']].copy()
 
-    # Feature engineering
-    df['Return_1d'] = df['Close'].pct_change()
-    df['Return_2d'] = df['Close'].pct_change(2)
-    df['Return_5d'] = df['Close'].pct_change(5)
+    # Daily price change during the same day
+    df['Daily_Change_Pct'] = (df['Close'] - df['Open']) / df['Open']
 
-    df['Range'] = df['High'] - df['Low']
-    df['OC_Change'] = df['Close'] - df['Open']
+    # Moving averages based on closing price
+    df['MA_5'] = df['Close'].rolling(window=5).mean()
+    df['MA_10'] = df['Close'].rolling(window=10).mean()
 
-    df['MA_5'] = df['Close'].rolling(5).mean()
-    df['MA_10'] = df['Close'].rolling(10).mean()
+    # Tomorrow's close
+    df['Close_tomorrow'] = df['Close'].shift(-1)
 
-    df['MA_5_over_MA_10'] = df['MA_5'] / df['MA_10']
-    df['Close_over_MA_5'] = df['Close'] / df['MA_5']
-    df['Close_over_MA_10'] = df['Close'] / df['MA_10']
+    # Target: 1 if tomorrow closes higher than today, else 0
+    df['Target'] = (df['Close_tomorrow'] > df['Close']).astype(int)
 
-    df['Volume_Change'] = df['Volume'].pct_change()
-    df['Volatility_5d'] = df['Return_1d'].rolling(5).std()
+    # Remove helper column
+    df = df.drop(columns=['Close_tomorrow'])
 
-    # Only calculate the Target and drop the last row if we are in training mode
-    if not live_inference:
-        # Target: whether tomorrow closes above today
-        df['Close_tomorrow'] = df['Close'].shift(-1)
-        df['Target'] = (df['Close_tomorrow'] > df['Close']).astype(int)
-        
-        # Remove last row (no tomorrow)
-        df = df.iloc[:-1]
-
-    # Drop rows with NaN from rolling/pct_change
+    # Remove invalid rows
     df = df.dropna()
 
-    return df
+    print(f"ETL complete: {rows_before} rows -> {rows_after} rows ({rows_dropped} dropped)")
+    
+    # Return consistent column order
+    return df[['Open', 'Close', 'Daily_Change_Pct', 'MA_5', 'MA_10', 'Volume', 'Target']]
