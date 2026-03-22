@@ -145,6 +145,18 @@ with info_col2:
 
 st.caption(f"Showing {ticker} data from {start_date} to {end_date}")
 
+# MA notes
+ma_notes = []
+if show_ma10 and len(df) < 10:
+    ma_notes.append("Not enough history in the selected window to fully display the 10-day moving average.")
+if show_ma20 and len(df) < 20:
+    ma_notes.append("Not enough history in the selected window to fully display the 20-day moving average.")
+
+for note in ma_notes:
+    st.info(note)
+
+st.markdown("---")
+
 # ---------------------------
 # Main chart
 # ---------------------------
@@ -225,17 +237,13 @@ else:
     st.plotly_chart(fig_candle, use_container_width=True)
 
 
-# MA notes
-ma_notes = []
-if show_ma10 and len(df) < 10:
-    ma_notes.append("Not enough history in the selected window to fully display the 10-day moving average.")
-if show_ma20 and len(df) < 20:
-    ma_notes.append("Not enough history in the selected window to fully display the 20-day moving average.")
+info_col1, info_col2 = st.columns(2)
+with info_col1:
+    st.caption(f"Data current as of: {latest_available}")
+with info_col2:
+    st.caption(f"Trading days in selected range: {len(df)}")
 
-for note in ma_notes:
-    st.info(note)
-
-st.markdown("---")
+st.caption(f"Showing {ticker} data from {start_date} to {end_date}")
 
 # ---------------------------
 # Volume chart
