@@ -39,42 +39,33 @@ if df_all.empty:
     st.stop()
 
 df_all["Date"] = pd.to_datetime(df_all["Date"])
+df_all = df_all.sort_values("Date").copy()
 latest_available = df_all["Date"].max().date()
 
 # ---------------------------
-# Price snapshot
+# KPI snapshot from broad data
 # ---------------------------
-latest_close = df["Close"].iloc[-1]
-previous_close = df["Close"].iloc[-2] if len(df) > 1 else latest_close
-price_delta = latest_close - previous_close
-price_delta_pct = (price_delta / previous_close * 100) if previous_close != 0 else 0
+latest_close_kpi = df_all["Close"].iloc[-1]
+previous_close_kpi = df_all["Close"].iloc[-2] if len(df_all) > 1 else latest_close_kpi
+price_delta = latest_close_kpi - previous_close_kpi
+price_delta_pct = (price_delta / previous_close_kpi * 100) if previous_close_kpi != 0 else 0
 
-period_high = df["High"].max()
-period_low = df["Low"].min()
-latest_volume = df["Volume"].iloc[-1]
-avg_volume = df["Volume"].mean()
+period_high = df_all["High"].max()
+period_low = df_all["Low"].min()
+latest_volume = df_all["Volume"].iloc[-1]
+avg_volume = df_all["Volume"].mean()
 
 metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
-metric_col1.metric("Current Price", f"${latest_close:,.2f}", f"{price_delta:+.2f} ({price_delta_pct:+.2f}%)")
+metric_col1.metric("Current Price", f"${latest_close_kpi:,.2f}", f"{price_delta:+.2f} ({price_delta_pct:+.2f}%)")
 metric_col2.metric("Period High", f"${period_high:,.2f}")
 metric_col3.metric("Period Low", f"${period_low:,.2f}")
 metric_col4.metric("Average Volume", f"{avg_volume:,.0f}")
 metric_col5.metric("Latest Volume", f"{latest_volume:,.0f}")
 
-# MA notes
-ma_notes = []
-if show_ma10 and len(df) < 10:
-    ma_notes.append("Not enough history in the selected window to fully display the 10-day moving average.")
-if show_ma20 and len(df) < 20:
-    ma_notes.append("Not enough history in the selected window to fully display the 20-day moving average.")
-
-for note in ma_notes:
-    st.info(note)
-
 st.markdown("---")
 
 # ---------------------------
-# Chart controls
+# Chart controls BELOW KPIs
 # ---------------------------
 st.subheader(f"{ticker} Price Chart")
 
@@ -148,6 +139,27 @@ df = df.sort_values("Date").copy()
 # Moving averages
 df["MA_10"] = df["Close"].rolling(10).mean()
 df["MA_20"] = df["Close"].rolling(20).mean()
+
+# Data info
+info_col1, info_col2 = st.columns(2)
+with info_col1:
+    st.caption(f"Data current as of: {latest_available}")
+with info_col2:
+    st.caption(f"Trading days in selected range: {len(df)}")
+
+st.caption(f"Showing {ticker} data from {start_date} to {end_date}")
+
+# MA notes
+ma_notes = []
+if show_ma10 and len(df) < 10:
+    ma_notes.append("Not enough history in the selected window to fully display the 10-day moving average.")
+if show_ma20 and len(df) < 20:
+    ma_notes.append("Not enough history in the selected window to fully display the 20-day moving average.")
+
+for note in ma_notes:
+    st.info(note)
+
+st.markdown("---")
 
 # ---------------------------
 # Main chart
@@ -228,7 +240,6 @@ else:
 
     st.plotly_chart(fig_candle, use_container_width=True)
 
-
 info_col1, info_col2 = st.columns(2)
 with info_col1:
     st.caption(f"Data current as of: {latest_available}")
@@ -268,7 +279,10 @@ recent_5d_change = (
     if len(df) >= 5 else 0
 )
 
-volume_ratio = latest_volume / avg_volume if avg_volume != 0 else 1
+latest_close = df["Close"].iloc[-1]
+latest_volume_filtered = df["Volume"].iloc[-1]
+avg_volume_filtered = df["Volume"].mean()
+volume_ratio = latest_volume_filtered / avg_volume_filtered if avg_volume_filtered != 0 else 1
 
 latest_ma10 = df["MA_10"].iloc[-1] if not pd.isna(df["MA_10"].iloc[-1]) else None
 latest_ma20 = df["MA_20"].iloc[-1] if not pd.isna(df["MA_20"].iloc[-1]) else None
