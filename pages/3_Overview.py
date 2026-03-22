@@ -59,8 +59,8 @@ metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
 metric_col1.metric("Current Price", f"${latest_close_kpi:,.2f}", f"{price_delta:+.2f} ({price_delta_pct:+.2f}%)")
 metric_col2.metric("Period High", f"${period_high:,.2f}")
 metric_col3.metric("Period Low", f"${period_low:,.2f}")
-metric_col4.metric("Average Volume", f"{avg_volume:,.0f}")
-metric_col5.metric("Latest Volume", f"{latest_volume:,.0f}")
+metric_col4.metric("Average Volume", f"{avg_volume / 1_000_000:,.1f}M")
+metric_col5.metric("Latest Volume", f"{latest_volume / 1_000_000:,.1f}M")
 
 st.markdown("---")
 
