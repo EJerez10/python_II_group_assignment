@@ -41,6 +41,40 @@ if df_all.empty:
 df_all["Date"] = pd.to_datetime(df_all["Date"])
 latest_available = df_all["Date"].max().date()
 
+
+
+# ---------------------------
+# Price snapshot
+# ---------------------------
+latest_close = df["Close"].iloc[-1]
+previous_close = df["Close"].iloc[-2] if len(df) > 1 else latest_close
+price_delta = latest_close - previous_close
+price_delta_pct = (price_delta / previous_close * 100) if previous_close != 0 else 0
+
+period_high = df["High"].max()
+period_low = df["Low"].min()
+latest_volume = df["Volume"].iloc[-1]
+avg_volume = df["Volume"].mean()
+
+metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
+metric_col1.metric("Current Price", f"${latest_close:,.2f}", f"{price_delta:+.2f} ({price_delta_pct:+.2f}%)")
+metric_col2.metric("Period High", f"${period_high:,.2f}")
+metric_col3.metric("Period Low", f"${period_low:,.2f}")
+metric_col4.metric("Average Volume", f"{avg_volume:,.0f}")
+metric_col5.metric("Latest Volume", f"{latest_volume:,.0f}")
+
+# MA notes
+ma_notes = []
+if show_ma10 and len(df) < 10:
+    ma_notes.append("Not enough history in the selected window to fully display the 10-day moving average.")
+if show_ma20 and len(df) < 20:
+    ma_notes.append("Not enough history in the selected window to fully display the 20-day moving average.")
+
+for note in ma_notes:
+    st.info(note)
+
+st.markdown("---")
+
 # ---------------------------
 # Chart controls
 # ---------------------------
@@ -116,38 +150,6 @@ df = df.sort_values("Date").copy()
 # Moving averages
 df["MA_10"] = df["Close"].rolling(10).mean()
 df["MA_20"] = df["Close"].rolling(20).mean()
-
-# ---------------------------
-# Price snapshot
-# ---------------------------
-latest_close = df["Close"].iloc[-1]
-previous_close = df["Close"].iloc[-2] if len(df) > 1 else latest_close
-price_delta = latest_close - previous_close
-price_delta_pct = (price_delta / previous_close * 100) if previous_close != 0 else 0
-
-period_high = df["High"].max()
-period_low = df["Low"].min()
-latest_volume = df["Volume"].iloc[-1]
-avg_volume = df["Volume"].mean()
-
-metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
-metric_col1.metric("Current Price", f"${latest_close:,.2f}", f"{price_delta:+.2f} ({price_delta_pct:+.2f}%)")
-metric_col2.metric("Period High", f"${period_high:,.2f}")
-metric_col3.metric("Period Low", f"${period_low:,.2f}")
-metric_col4.metric("Average Volume", f"{avg_volume:,.0f}")
-metric_col5.metric("Latest Volume", f"{latest_volume:,.0f}")
-
-# MA notes
-ma_notes = []
-if show_ma10 and len(df) < 10:
-    ma_notes.append("Not enough history in the selected window to fully display the 10-day moving average.")
-if show_ma20 and len(df) < 20:
-    ma_notes.append("Not enough history in the selected window to fully display the 20-day moving average.")
-
-for note in ma_notes:
-    st.info(note)
-
-st.markdown("---")
 
 # ---------------------------
 # Main chart
