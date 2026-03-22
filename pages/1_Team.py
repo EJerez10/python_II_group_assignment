@@ -92,7 +92,6 @@ def render_member(member):
                 <img class="team-img" src="data:image/png;base64,{img_b64}" />
                 <div class="team-name">{member['name']}</div>
                 <div class="team-role">{member['role']}</div>
-                <div class="team-bio">{member['bio']}</div>
             </div>
             """,
             unsafe_allow_html=True
@@ -103,7 +102,6 @@ def render_member(member):
             <div class="team-card">
                 <div class="team-name">{member['name']}</div>
                 <div class="team-role">{member['role']}</div>
-                <div class="team-bio">{member['bio']}</div>
             </div>
             """,
             unsafe_allow_html=True
