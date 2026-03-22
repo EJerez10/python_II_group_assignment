@@ -137,14 +137,6 @@ metric_col3.metric("Period Low", f"${period_low:,.2f}")
 metric_col4.metric("Average Volume", f"{avg_volume:,.0f}")
 metric_col5.metric("Latest Volume", f"{latest_volume:,.0f}")
 
-info_col1, info_col2 = st.columns(2)
-with info_col1:
-    st.caption(f"Data current as of: {latest_available}")
-with info_col2:
-    st.caption(f"Trading days in selected range: {len(df)}")
-
-st.caption(f"Showing {ticker} data from {start_date} to {end_date}")
-
 # MA notes
 ma_notes = []
 if show_ma10 and len(df) < 10:
