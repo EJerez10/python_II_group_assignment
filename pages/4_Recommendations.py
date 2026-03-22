@@ -242,12 +242,34 @@ if st.button("Generate Recommendation"):
                 st.metric("Latest Close", f"${latest_close:,.2f}")
 
             with col5:
+                if recent_change_pct > 0:
+                    bg = "#DCFCE7"   # light green
+                    text = "#16A34A" # green
+                    arrow = "↑"
+                elif recent_change_pct < 0:
+                    bg = "#FEE2E2"   # light red
+                    text = "#DC2626" # red
+                    arrow = "↓"
+                else:
+                    bg = "#F3F4F6"   # light gray
+                    text = "#6B7280"
+                    arrow = "→"
+
                 st.markdown(
                     f"""
-                    <div style="margin-top: 0.1rem;">
+                    <div style="margin-top:0.1rem;">
                         <div style="font-size:0.95rem; color:#374151; font-weight:600;">5-Day Change</div>
-                        <div style="font-size:2.8rem; font-weight:700; color:{change_color}; line-height:1.1;">
-                            {recent_change_pct:+.2f}%
+                        <div style="
+                            display:inline-block;
+                            background-color:{bg};
+                            color:{text};
+                            padding:6px 12px;
+                            border-radius:999px;
+                            font-weight:600;
+                            font-size:1.2rem;
+                            margin-top:4px;
+                        ">
+                            {arrow} {recent_change_pct:+.2f}%
                         </div>
                     </div>
                     """,
