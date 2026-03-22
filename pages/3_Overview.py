@@ -41,7 +41,23 @@ if df_all.empty:
 df_all["Date"] = pd.to_datetime(df_all["Date"])
 latest_available = df_all["Date"].max().date()
 
+# ---------------------------
+# Filter data from broad fetch
+# ---------------------------
+df = df_all[
+    (df_all["Date"].dt.date >= start_date) &
+    (df_all["Date"].dt.date <= end_date)
+].copy()
 
+if df.empty:
+    st.warning("No data returned for the selected ticker and date range.")
+    st.stop()
+
+df = df.sort_values("Date").copy()
+
+# Moving averages
+df["MA_10"] = df["Close"].rolling(10).mean()
+df["MA_20"] = df["Close"].rolling(20).mean()
 
 # ---------------------------
 # Price snapshot
@@ -132,24 +148,6 @@ else:
 if start_date > end_date:
     st.error("Start date must be before end date.")
     st.stop()
-
-# ---------------------------
-# Filter data from broad fetch
-# ---------------------------
-df = df_all[
-    (df_all["Date"].dt.date >= start_date) &
-    (df_all["Date"].dt.date <= end_date)
-].copy()
-
-if df.empty:
-    st.warning("No data returned for the selected ticker and date range.")
-    st.stop()
-
-df = df.sort_values("Date").copy()
-
-# Moving averages
-df["MA_10"] = df["Close"].rolling(10).mean()
-df["MA_20"] = df["Close"].rolling(20).mean()
 
 # ---------------------------
 # Main chart
