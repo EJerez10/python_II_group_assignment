@@ -321,7 +321,24 @@ with pattern_col1:
         st.write(point)
 
 with pattern_col2:
-    st.metric("5-Day Change", f"{recent_5d_change:+.2f}%")
+    if recent_5d_change > 0:
+        color = "#16A34A"   # green
+    elif recent_5d_change < 0:
+        color = "#DC2626"   # red
+    else:
+        color = "#6B7280"   # neutral gray
+
+    st.markdown(
+        f"""
+        <div style="text-align:right;">
+            <div style="font-size:0.9rem; color:#6B7280;">5-Day Change</div>
+            <div style="font-size:2rem; font-weight:600; color:{color};">
+                {recent_5d_change:+.2f}%
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # ---------------------------
 # Raw data
