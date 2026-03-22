@@ -140,15 +140,6 @@ df = df.sort_values("Date").copy()
 df["MA_10"] = df["Close"].rolling(10).mean()
 df["MA_20"] = df["Close"].rolling(20).mean()
 
-# Data info
-info_col1, info_col2 = st.columns(2)
-with info_col1:
-    st.caption(f"Data current as of: {latest_available}")
-with info_col2:
-    st.caption(f"Trading days in selected range: {len(df)}")
-
-st.caption(f"Showing {ticker} data from {start_date} to {end_date}")
-
 # MA notes
 ma_notes = []
 if show_ma10 and len(df) < 10:
@@ -240,6 +231,7 @@ else:
 
     st.plotly_chart(fig_candle, use_container_width=True)
 
+# Data info
 info_col1, info_col2 = st.columns(2)
 with info_col1:
     st.caption(f"Data current as of: {latest_available}")
