@@ -195,19 +195,68 @@ if st.button("Generate Recommendation"):
             st.markdown("---")
             st.subheader(f"Recommendation for {ticker}")
 
-            col1, col2, col3, col4 = st.columns(4)
-            col1.metric("Ticker", ticker)
+            # Up / Down label from raw model prediction
+            direction_label = "UP" if prediction == 1 else "DOWN"
+            direction_color = "#16A34A" if prediction == 1 else "#DC2626"
+
+            # 5-day change color
+            if recent_change_pct > 0:
+                change_color = "#16A34A"
+            elif recent_change_pct < 0:
+                change_color = "#DC2626"
+            else:
+                change_color = "#6B7280"
+
+            col1, col2, col3, col4, col5 = st.columns(5)
+
+            with col1:
+                st.metric("Ticker", ticker)
+
             with col2:
                 st.markdown(
-                    f"**Recommendation:** <span style='color:{signal_color}'>{signal_label}</span>",
+                    f"""
+                    <div style="margin-top: 0.1rem;">
+                        <div style="font-size:0.95rem; color:#374151; font-weight:600;">Model Predicts</div>
+                        <div style="font-size:2.8rem; font-weight:700; color:{direction_color}; line-height:1.1;">
+                            {direction_label}
+                        </div>
+                    </div>
+                    """,
                     unsafe_allow_html=True
                 )
-            col3.metric("Latest Close", f"${latest_close:,.2f}")
-            col4.metric("5-Day Change", f"{recent_change_pct:+.2f}%")
+
+            with col3:
+                st.markdown(
+                    f"""
+                    <div style="margin-top: 0.1rem;">
+                        <div style="font-size:0.95rem; color:#374151; font-weight:600;">Recommendation</div>
+                        <div style="font-size:2.8rem; font-weight:700; color:{signal_color}; line-height:1.1;">
+                            {signal_label}
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            with col4:
+                st.metric("Latest Close", f"${latest_close:,.2f}")
+
+            with col5:
+                st.markdown(
+                    f"""
+                    <div style="margin-top: 0.1rem;">
+                        <div style="font-size:0.95rem; color:#374151; font-weight:600;">5-Day Change</div>
+                        <div style="font-size:2.8rem; font-weight:700; color:{change_color}; line-height:1.1;">
+                            {recent_change_pct:+.2f}%
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
             st.markdown(
                 f"""
-                <div style="color:#10B981; font-size:0.85rem; font-style:italic; margin-bottom:4px;">
+                <div style="color:#6B7280; font-size:0.85rem; font-style:italic; margin-top:8px; margin-bottom:2px;">
                 Model used: {model_path}
                 </div>
                 """,
@@ -216,7 +265,7 @@ if st.button("Generate Recommendation"):
 
             st.markdown(
                 f"""
-                <div style="color:#10B981; font-size:0.85rem; font-style:italic; margin-bottom:8px;">
+                <div style="color:#6B7280; font-size:0.85rem; font-style:italic; margin-bottom:12px;">
                 Recommendation based on latest available data: {latest_available}
                 </div>
                 """,
@@ -238,7 +287,6 @@ if st.button("Generate Recommendation"):
                 """,
                 unsafe_allow_html=True
             )
-
             if hasattr(loaded_model, "predict_proba"):
                 prob_up = loaded_model.predict_proba(latest_row)[0][1]
                 st.metric("Probability of Price Increase", f"{prob_up:.1%}")
