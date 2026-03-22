@@ -322,18 +322,37 @@ with pattern_col1:
 
 with pattern_col2:
     if recent_5d_change > 0:
-        color = "#16A34A"   # green
+        bg = "#DCFCE7"   # light green
+        text = "#16A34A" # green
+        arrow = "↑"
     elif recent_5d_change < 0:
-        color = "#DC2626"   # red
+        bg = "#FEE2E2"   # light red
+        text = "#DC2626" # red
+        arrow = "↓"
     else:
-        color = "#6B7280"   # neutral gray
+        bg = "#F3F4F6"   # light gray
+        text = "#6B7280" # gray
+        arrow = "→"
 
     st.markdown(
         f"""
-        <div style="text-align:right;">
-            <div style="font-size:0.9rem; color:#6B7280;">5-Day Change</div>
-            <div style="font-size:2rem; font-weight:600; color:{color};">
-                {recent_5d_change:+.2f}%
+        <div style="text-align:right; padding-top:8px;">
+            <div style="font-size:1rem; color:#6B7280; font-weight:600; margin-bottom:10px;">
+                5-Day Change
+            </div>
+            <div style="
+                display:inline-block;
+                background-color:{bg};
+                color:{text};
+                padding:12px 20px;
+                border-radius:999px;
+                font-weight:700;
+                font-size:2rem;
+                line-height:1;
+                min-width:220px;
+                text-align:center;
+            ">
+                {arrow} {recent_5d_change:+.2f}%
             </div>
         </div>
         """,
