@@ -1,8 +1,10 @@
 streamlit
 pandas
+numpy
 plotly
 simfin
 scikit-learn
 joblib
 python-dotenv
 requests
+matplotlib

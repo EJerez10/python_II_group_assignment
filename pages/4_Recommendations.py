@@ -25,14 +25,14 @@ if not api_key:
 simfin = PySimFin(api_key)
 
 MODEL_PATHS = {
-    "AAPL": "gradient_boosting_AAPL.joblib",
-    "MSFT": "gradient_boosting_MSFT.joblib",
-    "TSLA": "gradient_boosting_TSLA.joblib",
-    "AMZN": "gradient_boosting_AMZN.joblib",
-    "GOOG": "gradient_boosting_GOOG.joblib",
-    "NVDA": "gradient_boosting_NVDA.joblib",
-    "META": "gradient_boosting_META.joblib",
-    "SPOT": "gradient_boosting_SPOT.joblib",
+    "AAPL": "models/gradient_boosting_AAPL.joblib",
+    "MSFT": "models/gradient_boosting_MSFT.joblib",
+    "TSLA": "models/gradient_boosting_TSLA.joblib",
+    "AMZN": "models/gradient_boosting_AMZN.joblib",
+    "GOOG": "models/gradient_boosting_GOOG.joblib",
+    "NVDA": "models/gradient_boosting_NVDA.joblib",
+    "META": "models/gradient_boosting_META.joblib",
+    "SPOT": "models/gradient_boosting_SPOT.joblib",
 }
 
 @st.cache_resource
