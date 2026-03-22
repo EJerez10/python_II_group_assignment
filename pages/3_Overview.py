@@ -336,35 +336,11 @@ with pattern_col2:
 
     st.markdown(
         f"""
-        <div style="
-            display:flex;
-            flex-direction:column;
-            justify-content:center;
-            align-items:flex-end;
-            height:100%;
-            padding-top:10px;
-        ">
-            <div style="
-                font-size:1rem;
-                color:#6B7280;
-                font-weight:600;
-                margin-bottom:10px;
-            ">
+        <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; height:100%; padding-top:10px;">
+            <div style="font-size:1rem; color:#6B7280; font-weight:600; margin-bottom:10px;">
                 5-Day Change
             </div>
-
-            <div style="
-                display:inline-block;
-                background-color:{bg};
-                color:{text};
-                padding:12px 20px;
-                border-radius:999px;
-                font-weight:700;
-                font-size:2rem;
-                line-height:1;
-                min-width:220px;
-                text-align:center;
-            ">
+            <div style="display:inline-block; background-color:{bg}; color:{text}; padding:12px 20px; border-radius:999px; font-weight:700; font-size:2rem; line-height:1; min-width:220px; text-align:center;">
                 {arrow} {recent_5d_change:+.2f}%
             </div>
         </div>
