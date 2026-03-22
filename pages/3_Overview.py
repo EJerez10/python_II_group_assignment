@@ -216,7 +216,8 @@ else:
         title=f"{ticker} Candlestick Chart",
         xaxis_title="Date",
         yaxis_title="Price",
-        height=500
+        height=500,
+        xaxis_rangeslider_visible=False
     )
 
     st.plotly_chart(fig_candle, use_container_width=True)
