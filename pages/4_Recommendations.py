@@ -213,12 +213,30 @@ if st.button("Generate Recommendation"):
                 st.metric("Ticker", ticker)
 
             with col2:
+                if prediction == 1:
+                    bg = "#DCFCE7"
+                    text = "#16A34A"
+                    arrow = "↑"
+                else:
+                    bg = "#FEE2E2"
+                    text = "#DC2626"
+                    arrow = "↓"
+
                 st.markdown(
                     f"""
-                    <div style="margin-top: 0.1rem;">
+                    <div>
                         <div style="font-size:0.95rem; color:#374151; font-weight:600;">Model Predicts</div>
-                        <div style="font-size:2.8rem; font-weight:700; color:{direction_color}; line-height:1.1;">
-                            {direction_label}
+                        <div style="
+                            display:inline-block;
+                            background-color:{bg};
+                            color:{text};
+                            padding:6px 12px;
+                            border-radius:999px;
+                            font-weight:600;
+                            font-size:1.2rem;
+                            margin-top:4px;
+                        ">
+                            {arrow} {direction_label}
                         </div>
                     </div>
                     """,
@@ -226,11 +244,30 @@ if st.button("Generate Recommendation"):
                 )
 
             with col3:
+                if signal_label == "BUY":
+                    bg = "#DCFCE7"
+                    text = "#16A34A"
+                elif "SELL" in signal_label:
+                    bg = "#FEE2E2"
+                    text = "#DC2626"
+                else:
+                    bg = "#FEF3C7"
+                    text = "#D97706"
+
                 st.markdown(
                     f"""
-                    <div style="margin-top: 0.1rem;">
+                    <div>
                         <div style="font-size:0.95rem; color:#374151; font-weight:600;">Recommendation</div>
-                        <div style="font-size:2.8rem; font-weight:700; color:{signal_color}; line-height:1.1;">
+                        <div style="
+                            display:inline-block;
+                            background-color:{bg};
+                            color:{text};
+                            padding:6px 12px;
+                            border-radius:999px;
+                            font-weight:600;
+                            font-size:1.2rem;
+                            margin-top:4px;
+                        ">
                             {signal_label}
                         </div>
                     </div>
