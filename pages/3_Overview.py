@@ -140,16 +140,6 @@ if df.empty:
     st.warning("No data returned for the selected ticker and date range.")
     st.stop()
 
-# MA notes
-ma_notes = []
-if show_ma10 and len(df) < 10:
-    ma_notes.append("Not enough history in the selected window to fully display the 10-day moving average.")
-if show_ma20 and len(df) < 20:
-    ma_notes.append("Not enough history in the selected window to fully display the 20-day moving average.")
-
-for note in ma_notes:
-    st.info(note)
-
 st.markdown("---")
 
 # ---------------------------
