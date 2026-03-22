@@ -54,13 +54,3 @@ Generate a model-based stock recommendation using:
 - engineered market features
 - recent price behavior
 """)
-
-st.markdown("---")
-
-st.subheader("Why We Built Raviolution")
-
-st.write("""
-We wanted to build a platform that makes market analysis more visual, more interactive,
-and easier to understand. By combining financial data with machine learning in one place,
-Raviolution provides a simplified trading dashboard experience inspired by real financial platforms.
-""")

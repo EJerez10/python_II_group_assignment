@@ -100,24 +100,6 @@ if start_date > end_date:
     st.stop()
 
 # ---------------------------
-# Filter data from broad fetch
-# ---------------------------
-df = df_all[
-    (df_all["Date"].dt.date >= start_date) &
-    (df_all["Date"].dt.date <= end_date)
-].copy()
-
-if df.empty:
-    st.warning("No data returned for the selected ticker and date range.")
-    st.stop()
-
-df = df.sort_values("Date").copy()
-
-# Moving averages
-df["MA_10"] = df["Close"].rolling(10).mean()
-df["MA_20"] = df["Close"].rolling(20).mean()
-
-# ---------------------------
 # Price snapshot
 # ---------------------------
 latest_close = df["Close"].iloc[-1]
@@ -145,17 +127,23 @@ with info_col2:
 
 st.caption(f"Showing {ticker} data from {start_date} to {end_date}")
 
-# MA notes
-ma_notes = []
-if show_ma10 and len(df) < 10:
-    ma_notes.append("Not enough history in the selected window to fully display the 10-day moving average.")
-if show_ma20 and len(df) < 20:
-    ma_notes.append("Not enough history in the selected window to fully display the 20-day moving average.")
+# ---------------------------
+# Filter data from broad fetch
+# ---------------------------
+df = df_all[
+    (df_all["Date"].dt.date >= start_date) &
+    (df_all["Date"].dt.date <= end_date)
+].copy()
 
-for note in ma_notes:
-    st.info(note)
+if df.empty:
+    st.warning("No data returned for the selected ticker and date range.")
+    st.stop()
 
-st.markdown("---")
+df = df.sort_values("Date").copy()
+
+# Moving averages
+df["MA_10"] = df["Close"].rolling(10).mean()
+df["MA_20"] = df["Close"].rolling(20).mean()
 
 # ---------------------------
 # Main chart
@@ -235,6 +223,19 @@ else:
     )
 
     st.plotly_chart(fig_candle, use_container_width=True)
+
+
+# MA notes
+ma_notes = []
+if show_ma10 and len(df) < 10:
+    ma_notes.append("Not enough history in the selected window to fully display the 10-day moving average.")
+if show_ma20 and len(df) < 20:
+    ma_notes.append("Not enough history in the selected window to fully display the 20-day moving average.")
+
+for note in ma_notes:
+    st.info(note)
+
+st.markdown("---")
 
 # ---------------------------
 # Volume chart

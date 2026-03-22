@@ -53,31 +53,26 @@ team_members = [
         "name": "Enzo Jerez",
         "role": "Web App Development",
         "image": "assets/enzo.png",
-        "bio": "Built the Streamlit application, integrated SimFin, and shaped the overall dashboard experience."
     },
     {
         "name": "Roberto Cummings",
         "role": "Machine Learning",
         "image": "assets/roberto.png",
-        "bio": "Developed and trained the predictive models used in the recommendation engine."
     },
     {
         "name": "Jia Yi Rachel Lee",
         "role": "ETL / Data",
         "image": "assets/rachel.png",
-        "bio": "Worked on the ETL pipeline and feature engineering needed for model inference."
     },
     {
         "name": "Thomas-Christian Manteco",
         "role": "Research / UX",
         "image": "assets/thomas.png",
-        "bio": "Contributed product ideas, interface suggestions, and user experience improvements."
     },
     {
         "name": "Maria-Irina Popa",
         "role": "Support / Analysis",
         "image": "assets/maria.png",
-        "bio": "Supported analysis, testing, and helped refine the overall project direction."
     },
 ]
 

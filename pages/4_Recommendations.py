@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 from pysimfin import PySimFin
 from etl_pipeline import build_etl_dataset
 
+#add up or down singaler
+
 load_dotenv()
 
 st.title("🤖 Recommendations")
