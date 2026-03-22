@@ -125,6 +125,12 @@ if start_date > end_date:
 # ---------------------------
 # Filter data from broad fetch
 # ---------------------------
+# Calculate moving averages on the full history first
+df_all = df_all.sort_values("Date").copy()
+df_all["MA_10"] = df_all["Close"].rolling(10, min_periods=1).mean()
+df_all["MA_20"] = df_all["Close"].rolling(20, min_periods=1).mean()
+
+# Then filter to the selected display range
 df = df_all[
     (df_all["Date"].dt.date >= start_date) &
     (df_all["Date"].dt.date <= end_date)
@@ -133,12 +139,6 @@ df = df_all[
 if df.empty:
     st.warning("No data returned for the selected ticker and date range.")
     st.stop()
-
-df = df.sort_values("Date").copy()
-
-# Moving averages
-df["MA_10"] = df["Close"].rolling(10).mean()
-df["MA_20"] = df["Close"].rolling(20).mean()
 
 # MA notes
 ma_notes = []
