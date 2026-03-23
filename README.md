@@ -112,20 +112,40 @@ streamlit run app.py
 ```text
 python_II_group_assignment/
 │
-├── app.py                     # Streamlit app entry point
-├── etl_pipeline.py            # Feature engineering / ETL logic
-├── pysimfin.py                # SimFin wrapper for loading data
-├── requirements.txt           # Python dependencies
-├── README.md                  # Project documentation
-├── AI_Usage_Log.md            # AI usage documentation
+├── app.py                         # Streamlit app entry point
+├── etl_pipeline.py                # Feature engineering / ETL logic
+├── pysimfin.py                    # SimFin wrapper for loading data
+├── requirements.txt               # Python dependencies
+├── README.md                      # Project documentation
+├── AI_Usage_Log.md                # AI usage documentation
 ├── .gitignore
-├── .env                       # Local API key file (not to be shared)
+├── .DS_Store
+├── GroupAssignment_Instructions.ipynb
+├── Part_1.ipynb
 │
-├── assets/                    # Images used in the app
-├── models/                    # Saved trained .joblib models
-├── pages/                     # Multipage Streamlit app pages
-├── docs/                      # Project documentation (Executive Summary PDF)
+├── .devcontainer/                 # Dev container configuration
+│   └── devcontainer.json
+│
+├── Part_1_documentation/          # Notebook for Part 1 documentation
+│   └── Part_1.ipynb
+│
+├── __pycache__/                   # Python cache files
+│   ├── etl_pipeline.cpython-310.pyc
+│   └── pysimfin.cpython-310.pyc
+│
+├── assets/                        # Images and visual assets used in the app
+│   ├── .DS_Store
+│   ├── Screenshot 2026-03-21 at 5.35....
+│   ├── enzo.png
+│   ├── logo.jpg
+│   ├── maria.png
+│   ├── rachel.png
+│   ├── roberto.png
+│   └── thomas.png
+│
+├── docs/                          # Project documentation
 │   └── Executive Summary.pdf
 │
-├── GroupAssignment_Instructions.ipynb
-└── .devcontainer/
+├── models/                        # Saved trained .joblib models
+│
+└── pages/                         # Multipage Streamlit app pages
